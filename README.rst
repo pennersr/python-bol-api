@@ -24,13 +24,17 @@ CamelCase conventions::
     >>> open_orders[0].Buyer.BillingDetails.Streetname
     'Billingstraat'
 
-Fields are properly typed:
+Fields are properly typed::
 
     >>> open_orders[0].Paid
     True
-
     >>> open_orders[0].OpenOrderItems[0].TransactionFee
     Decimal('19.12')
-
     >>> open_orders[0].DateTimeDropShipper
     datetime.datetime(2014, 2, 10, 12, 7, 7)
+
+Access the underlying XML::
+
+    >>> from xml.etree import ElementTree
+    >>> ElementTree.tostring(open_orders[0].Buyer.BillingDetails.xml)
+    '<ns0:BillingDetails xmlns:ns0="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd"><ns0:SalutationCode>02</ns0:SalutationCode><ns0:FirstName>Jans</ns0:FirstName><ns0:Surname>Janssen</ns0:Surname><ns0:Streetname>Billingstraat</ns0:Streetname><ns0:Housenumber>1</ns0:Housenumber><ns0:HousenumberExtended>a</ns0:HousenumberExtended><ns0:AddressSupplement>Onder de brievanbus huisnummer 1</ns0:AddressSupplement><ns0:ZipCode>5000 ZZ</ns0:ZipCode><ns0:City>Amsterdam</ns0:City><ns0:CountryCode>NL</ns0:CountryCode><ns0:Email>dontemail@me.net</ns0:Email><ns0:Telephone>67890</ns0:Telephone><ns0:Company>Bol.com</ns0:Company></ns0:BillingDetails>'

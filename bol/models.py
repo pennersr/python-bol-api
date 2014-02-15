@@ -51,6 +51,7 @@ class Model(object):
     @classmethod
     def parse(cls, api, xml):
         m = cls()
+        m.xml = xml
         for element in xml.getchildren():
             tag = element.tag.partition('}')[2]
             field = getattr(m.Meta, tag, TextField())
@@ -63,6 +64,7 @@ class ModelList(list, Model):
     @classmethod
     def parse(cls, api, xml):
         ml = cls()
+        ml.xml = xml
         for element in xml.getchildren():
             ml.append(ml.Meta.item_type.parse(api, element))
         return ml
