@@ -154,7 +154,6 @@ class PaymentShipments(ModelList):
 class Payment(Model):
 
     class Meta:
-        Buyer = ModelField(Buyer)
         PaymentShipments = ModelField(PaymentShipments)
         DateTimePayment = DateTimeField()
         PaymentAmount = DecimalField()
