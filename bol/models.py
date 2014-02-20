@@ -19,6 +19,7 @@ class BooleanField(Field):
     def parse(self, api, xml, instance):
         return xml.text == 'true'
 
+
 class DecimalField(Field):
 
     def parse(self, api, xml, instance):
@@ -117,3 +118,49 @@ class OpenOrders(ModelList):
 
     class Meta:
         item_type = OpenOrder
+
+
+class PaymentShipmentItem(Model):
+
+    class Meta:
+        Quantity = IntegerField()
+        Price = DecimalField()
+        TransactionFee = DecimalField()
+        TotalAmount = DecimalField()
+        ShippingContribution = DecimalField()
+
+
+class PaymentShipmentItems(ModelList):
+
+    class Meta:
+        item_type = PaymentShipmentItem
+
+
+class PaymentShipment(Model):
+
+    class Meta:
+
+        PaymentShipmentAmount = DecimalField()
+        DateTimeShipment = DateTimeField()
+        PaymentShipmentItems = ModelField(PaymentShipmentItems)
+
+
+class PaymentShipments(ModelList):
+
+    class Meta:
+        item_type = PaymentShipment
+
+
+class Payment(Model):
+
+    class Meta:
+        Buyer = ModelField(Buyer)
+        PaymentShipments = ModelField(PaymentShipments)
+        DateTimePayment = DateTimeField()
+        PaymentAmount = DecimalField()
+
+
+class Payments(ModelList):
+
+    class Meta:
+        item_type = Payment

@@ -8,7 +8,7 @@ from xml.etree import ElementTree
 __all__ = ['PlazaAPI']
 
 
-from .models import OpenOrders
+from .models import OpenOrders, Payments
 
 
 class MethodGroup(object):
@@ -23,7 +23,7 @@ class MethodGroup(object):
             version=self.api.version,
             name=name)
         xml = self.api.request(method, uri)
-        return OpenOrders.parse(self.api, xml)
+        return xml
 
 
 class OrderMethods(MethodGroup):
@@ -32,7 +32,18 @@ class OrderMethods(MethodGroup):
         super(OrderMethods, self).__init__(api, 'orders')
 
     def open(self):
-        return self.request('GET', 'open')
+        xml = self.request('GET', 'open')
+        return OpenOrders.parse(self.api, xml)
+
+
+class PaymentMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(PaymentMethods, self).__init__(api, 'payments')
+
+    def payments(self, year, month):
+        xml = self.request('GET', 'payments/%d%02d' % (year, month))
+        return Payments.parse(self.api, xml)
 
 
 class PlazaAPI(object):
@@ -43,6 +54,7 @@ class PlazaAPI(object):
         self.url = 'https://%splazaapi.bol.com' % ('test-' if test else '')
         self.version = 'v1'
         self.orders = OrderMethods(self)
+        self.payments = PaymentMethods(self)
 
     def request(self, method, uri):
         content_type = 'application/xml; charset=UTF-8'
