@@ -18,7 +18,8 @@ class ModelTest(TestCase):
         self.assertEqual(len(open_orders), 2)
         self.assertEqual(open_orders[0].Paid, True)
         self.assertEqual(open_orders[1].Paid, False)
-        self.assertEqual(open_orders[0].OpenOrderItems[0].TransactionFee, Decimal('19.12'))
+        self.assertEqual(open_orders[0].OpenOrderItems[0].TransactionFee,
+                         Decimal('19.12'))
         self.assertEqual(open_orders[0].DateTimeCustomer,
                          datetime(2014, 2, 10, 11, 58, 47))
         self.assertEqual(open_orders[1].DateTimeDropShipper,

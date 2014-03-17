@@ -6,12 +6,30 @@ A Python wrapper for the bol.com API. Currently rather incomplete, as
 it offers only those methods required for my own projects so far.
 
 
-Usage
-=====
+Open API
+========
 
 Instantiate the API::
 
-    >>> from bol.api import PlazaAPI
+    >>> from bol.openapi.api import OpenAPI
+    >>> api = OpenAPI('api_key')
+
+Invoke a method::
+
+    >>> data = api.catalog.products((['1004004011187773', '1004004011231766'])
+
+JSON data is returned "as is":
+
+    >>> data['products'][0]['ean']
+    u'0093155141650'
+
+
+Plaza API
+=========
+
+Instantiate the API::
+
+    >>> from bol.plaza.api import PlazaAPI
     >>> api = PlazaAPI('public_key', 'private_key', test=True)
 
 Invoke a method::
