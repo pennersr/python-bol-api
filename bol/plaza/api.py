@@ -68,10 +68,10 @@ x-bol-date:{date}
                 date=date,
                 method=method,
                 uri=uri)
-        h = hmac.new(self.private_key, msg, hashlib.sha256)
+        h = hmac.new(self.private_key.encode('utf-8'), msg.encode('utf-8'), hashlib.sha256)
         b64 = base64.b64encode(h.digest())
 
-        signature = self.public_key + ':' + b64
+        signature = self.public_key.encode('utf-8') + b':' + b64
 
         headers = {'Content-Type': content_type,
                    'X-BOL-Date': date,
