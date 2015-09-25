@@ -2,3 +2,5 @@ python_bol_api.egg-info
 dist
 build
 *.pyc
+.cache
+.tox
