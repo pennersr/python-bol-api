@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.1'
+VERSION = '0.1.0'
 
 setup(name='python-bol-api',
       version=VERSION,
       description="Wrapper for the bol.com API",
       classifiers=[
-          'Development Status :: 5 - Production/Stable',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
           'Intended Audience :: System Administrators',
           'Operating System :: OS Independent',
