@@ -5,10 +5,52 @@ import hashlib
 import base64
 from xml.etree import ElementTree
 
+from .models import OpenOrders, Payments
+
 __all__ = ['PlazaAPI']
 
 
-from .models import OpenOrders, Payments
+PROCESS_XML = (
+    '<?xml version="1.0" encoding="UTF-8"?>'
+    '<ProcessOrders xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">'  # noqa
+        '<Shipments>'
+            '<Shipment>'
+                '<OrderId>{order_id}</OrderId>'
+                '<DateTime>{date_time}</DateTime>'
+                '<Transporter>'
+                    '<Code>{code}</Code>'
+                    '<TrackAndTraceCode>{transporter_code}</TrackAndTraceCode>'
+                '</Transporter>'
+                '<OrderItems>'
+                    '{order_item_ids}'
+                '</OrderItems>'
+            '</Shipment>'
+        '</Shipments>'
+    '</ProcessOrders>')
+
+
+# https://developers.bol.com/documentatie/plaza-api/developer-guide-plaza-api/appendix-a-transporters/
+TRANSPORTER_CODES = {
+    'DHLFORYOU',
+    'UPS',
+    'KIALA_BE',
+    'KIALA_NL',
+    'TNT',
+    'TNT_EXTRA',
+    'TNT_BRIEF',
+    'SLV',
+    'DYL',
+    'DPD_NL',
+    'DPD_BE',
+    'BPOST_BE',
+    'BPOST_BRIEF',
+    'BRIEFPOST',
+    'GLS',
+    'FEDEX_NL',
+    'FEDEX_BE',
+    'OTHER',
+    'DHL',
+}
 
 
 class MethodGroup(object):
@@ -17,12 +59,12 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, name):
+    def request(self, method, name, payload=None):
         uri = '/services/rest/{group}/{version}/{name}'.format(
             group=self.group,
             version=self.api.version,
             name=name)
-        xml = self.api.request(method, uri)
+        xml = self.api.request(method, uri, payload)
         return xml
 
 
@@ -34,6 +76,21 @@ class OrderMethods(MethodGroup):
     def open(self):
         xml = self.request('GET', 'open')
         return OpenOrders.parse(self.api, xml)
+
+    def process(self, order_id, date_time, code, transporter_code,
+                order_item_ids):
+        assert transporter_code in TRANSPORTER_CODES
+
+        payload = PROCESS_XML.format(
+            order_id=order_id,
+            date_time=date_time.replace(microsecond=0).isoformat(),
+            code=code,
+            transporter_code=transporter_code,
+            order_item_ids=''.join([
+                '<Id>{}</Id>'.format(i) for i in order_item_ids]))
+
+        response = self.request('POST', 'process', payload)
+        return response.find('{http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd}ProcessOrderId').text
 
 
 class PaymentMethods(MethodGroup):
@@ -56,7 +113,7 @@ class PlazaAPI(object):
         self.orders = OrderMethods(self)
         self.payments = PaymentMethods(self)
 
-    def request(self, method, uri):
+    def request(self, method, uri, payload=None):
         content_type = 'application/xml; charset=UTF-8'
         date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
         msg = """{method}
@@ -76,7 +133,12 @@ x-bol-date:{date}
         headers = {'Content-Type': content_type,
                    'X-BOL-Date': date,
                    'X-BOL-Authorization': signature}
-        resp = requests.get(self.url + uri, headers=headers)
+        if method == 'GET':
+            resp = requests.get(self.url + uri, headers=headers)
+        elif method == 'POST':
+            resp = requests.post(self.url + uri, headers=headers, data=payload)
+        else:
+            raise ValueError
         resp.raise_for_status()
         tree = ElementTree.fromstring(resp.content)
         return tree
