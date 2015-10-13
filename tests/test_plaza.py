@@ -93,6 +93,12 @@ PAYMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
 </bns:Payments>"""
 
 
+PROCESS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<bns:ProcessOrdersResult xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
+    <bns:ProcessOrderId>123</bns:ProcessOrderId>
+</bns:ProcessOrdersResult>"""
+
+
 @urlmatch(path=r'/services/rest/orders/v1/open$')
 def orders_stub(url, request):
     return ORDERS_RESPONSE
@@ -152,6 +158,39 @@ def test_orders():
         assert item.Price == Decimal('123.45')
         assert item.DeliveryPeriod == 'Binnen 24 uur'
         assert item.TransactionFee == Decimal('19.12')
+
+
+def test_order_process():
+    @urlmatch(path=r'/services/rest/orders/v1/process$')
+    def process_stub(url, request):
+        assert request.body == (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<ProcessOrders xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">'  # noqa
+                '<Shipments>'
+                    '<Shipment>'
+                        '<OrderId>123</OrderId>'
+                        '<DateTime>2015-01-02T12:11:00</DateTime>'
+                        '<Transporter>'
+                            '<Code>1234</Code>'
+                            '<TrackAndTraceCode>DHLFORYOU</TrackAndTraceCode>'
+                        '</Transporter>'
+                        '<OrderItems>'
+                            '<Id>34567</Id>'
+                        '</OrderItems>'
+                    '</Shipment>'
+                '</Shipments>'
+            '</ProcessOrders>')
+        return PROCESS_RESPONSE
+
+    with HTTMock(process_stub):
+        api = PlazaAPI('api_key', 'api_secret', test=True)
+        process_id = api.orders.process(
+            order_id='123',
+            date_time=datetime(2015, 1, 2, 12, 11, 0),
+            code='1234',
+            transporter_code='DHLFORYOU',
+            order_item_ids=['34567'])
+        assert process_id == '123'
 
 
 def test_payments():
