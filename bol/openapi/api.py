@@ -30,7 +30,7 @@ class CatalogMethods(MethodGroup):
     def search(self, query):
         """
         query might be 'Harry Potter', 'an_EAN' or 'an_ISBN'. 
-        For exact search, use quotation marks, for example: '"Harry Potter"'.
+        For exact search, use extra quotation marks, for example: '"Harry Potter"'.
         """
         path = 'search/?q=' + query
         return self.request('GET', path)
