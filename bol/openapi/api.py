@@ -26,6 +26,14 @@ class CatalogMethods(MethodGroup):
     def products(self, product_ids):
         path = 'products/' + ','.join(product_ids)
         return self.request('GET', path)
+        
+    def search(self, query):
+        """
+        query might be 'Harry Potter', 'an_EAN' or 'an_ISBN'. 
+        For exact search, use extra quotation marks, for example: '"Harry Potter"'.
+        """
+        path = 'search/?q=' + query
+        return self.request('GET', path)
 
 
 class OpenAPI(object):
@@ -38,7 +46,7 @@ class OpenAPI(object):
 
     def request(self, method, uri):
         resp = requests.get(self.url + uri,
-                            params={'apikey': self.api_key})
+                            params={'apikey': self.api_key}, timeout=1)
         resp.raise_for_status()
         data = resp.json()
         return data
