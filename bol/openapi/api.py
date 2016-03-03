@@ -46,7 +46,7 @@ class OpenAPI(object):
 
     def request(self, method, uri):
         resp = requests.get(self.url + uri,
-                            params={'apikey': self.api_key})
+                            params={'apikey': self.api_key}, timeout=1)
         resp.raise_for_status()
         data = resp.json()
         return data
