@@ -134,9 +134,9 @@ x-bol-date:{date}
                    'X-BOL-Date': date,
                    'X-BOL-Authorization': signature}
         if method == 'GET':
-            resp = requests.get(self.url + uri, headers=headers)
+            resp = requests.get(self.url + uri, headers=headers, timeout=1)
         elif method == 'POST':
-            resp = requests.post(self.url + uri, headers=headers, data=payload)
+            resp = requests.post(self.url + uri, headers=headers, data=payload, timeout=1)
         else:
             raise ValueError
         resp.raise_for_status()
