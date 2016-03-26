@@ -2,6 +2,18 @@
 python-bol-api
 ==============
 
+.. image:: https://badge.fury.io/py/python-bol-api.png
+   :target: http://badge.fury.io/py/python-bol-api
+
+.. image:: https://travis-ci.org/pennersr/python-bol-api.png
+   :target: http://travis-ci.org/pennersr/python-bol-api
+
+.. image:: https://img.shields.io/pypi/v/python-bol-api.svg
+   :target: https://pypi.python.org/pypi/python-bol-api
+
+.. image:: https://pennersr.github.io/img/bitcoin-badge.svg
+   :target: https://blockchain.info/address/1AJXuBMPHkaDCNX2rwAy34bGgs7hmrePEr
+
 A Python wrapper for the bol.com API. Currently rather incomplete, as
 it offers only those methods required for my own projects so far.
 
