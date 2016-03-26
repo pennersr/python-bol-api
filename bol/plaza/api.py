@@ -105,11 +105,12 @@ class PaymentMethods(MethodGroup):
 
 class PlazaAPI(object):
 
-    def __init__(self, public_key, private_key, test=False):
+    def __init__(self, public_key, private_key, test=False, timeout=None):
         self.public_key = public_key
         self.private_key = private_key
         self.url = 'https://%splazaapi.bol.com' % ('test-' if test else '')
         self.version = 'v1'
+        self.timeout = timeout
         self.orders = OrderMethods(self)
         self.payments = PaymentMethods(self)
 
@@ -125,7 +126,9 @@ x-bol-date:{date}
                 date=date,
                 method=method,
                 uri=uri)
-        h = hmac.new(self.private_key.encode('utf-8'), msg.encode('utf-8'), hashlib.sha256)
+        h = hmac.new(
+            self.private_key.encode('utf-8'),
+            msg.encode('utf-8'), hashlib.sha256)
         b64 = base64.b64encode(h.digest())
 
         signature = self.public_key.encode('utf-8') + b':' + b64
@@ -134,9 +137,16 @@ x-bol-date:{date}
                    'X-BOL-Date': date,
                    'X-BOL-Authorization': signature}
         if method == 'GET':
-            resp = requests.get(self.url + uri, headers=headers)
+            resp = requests.get(
+                self.url + uri,
+                headers=headers,
+                timeout=self.timeout)
         elif method == 'POST':
-            resp = requests.post(self.url + uri, headers=headers, data=payload)
+            resp = requests.post(
+                self.url + uri,
+                headers=headers,
+                data=payload,
+                timeout=self.timeout)
         else:
             raise ValueError
         resp.raise_for_status()

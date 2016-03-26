@@ -27,18 +27,30 @@ class CatalogMethods(MethodGroup):
         path = 'products/' + ','.join(product_ids)
         return self.request('GET', path)
 
+    def search(self, query):
+        """
+        query might be 'Harry Potter', 'an_EAN' or 'an_ISBN'.
+        For exact search, use extra quotation marks, for example:
+        '"Harry Potter"'.
+        """
+        path = 'search/'
+        return self.request('GET', path, {'q': query})
+
 
 class OpenAPI(object):
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, timeout=None):
         self.api_key = api_key
         self.url = 'https://api.bol.com'
         self.version = 'v4'
         self.catalog = CatalogMethods(self)
+        self.timeout = timeout
 
-    def request(self, method, uri):
-        resp = requests.get(self.url + uri,
-                            params={'apikey': self.api_key})
+    def request(self, method, uri, params={}):
+        resp = requests.get(
+            self.url + uri,
+            params=dict(params, **{'apikey': self.api_key}),
+            timeout=self.timeout)
         resp.raise_for_status()
         data = resp.json()
         return data
