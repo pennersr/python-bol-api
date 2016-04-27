@@ -17,6 +17,8 @@ setup(name='python-bol-api',
           'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.4',
+          'License :: OSI Approved :: '
+          'GNU Lesser General Public License v3 or later (LGPLv3+)',
       ],
       keywords='bol bol.com api wrapper',
       author='Raymond Penners',
