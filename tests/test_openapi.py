@@ -32,17 +32,23 @@ RESPONSE = {
         ],
         "urls": [{
             "key": "DESKTOP",
-            "value": "http://www.bol.com/nl/p/christopeit-al-1-hometrainer-zilver/9200000019250795/"
+            "value":
+            "http://www.bol.com/nl/p"
+            "/christopeit-al-1-hometrainer-zilver/9200000019250795/"
         }],
         "images": [{
             "type": "IMAGE",
             "key": "XS",
-            "url": "http://s.s-bol.com/imgbase0/imagebase/mini/FC/5/9/7/0/9200000019250795.jpg"
+            "url":
+            "http://s.s-bol.com"
+            "/imgbase0/imagebase/mini/FC/5/9/7/0/9200000019250795.jpg"
         }],
         "media": [{
             "type": "IMAGE",
             "key": "XL",
-            "url": "http://s.s-bol.com/imgbase0/imagebase/large/FC/5/9/7/0/9200000019250795.jpg"
+            "url":
+            "http://s.s-bol.com"
+            "/imgbase0/imagebase/large/FC/5/9/7/0/9200000019250795.jpg"
         }],
         "offerData": {
             "bolCom": 0,

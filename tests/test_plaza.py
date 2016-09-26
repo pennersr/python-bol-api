@@ -7,16 +7,16 @@ from httmock import HTTMock, urlmatch
 
 
 ORDERS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
-<bns:OpenOrders xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
-  <bns:OpenOrder>
+<bns:Orders
+    xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
+  <bns:Order>
     <bns:OrderId>123</bns:OrderId>
     <bns:DateTimeCustomer>2015-09-23T12:30:36</bns:DateTimeCustomer>
     <bns:DateTimeDropShipper>2015-09-23T12:30:36</bns:DateTimeDropShipper>
-    <bns:Paid>true</bns:Paid>
-    <bns:Buyer>
+    <bns:CustomerDetails>
       <bns:ShipmentDetails>
         <bns:SalutationCode>01</bns:SalutationCode>
-        <bns:FirstName>Jan</bns:FirstName>
+        <bns:Firstname>Jan</bns:Firstname>
         <bns:Surname>Janssen</bns:Surname>
         <bns:Streetname>Shipmentstraat</bns:Streetname>
         <bns:Housenumber>42</bns:Housenumber>
@@ -26,61 +26,62 @@ ORDERS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
         <bns:City>Amsterdam</bns:City>
         <bns:CountryCode>NL</bns:CountryCode>
         <bns:Email>nospam4me@myaccount.com</bns:Email>
-        <bns:Telephone>12345</bns:Telephone>
+        <bns:DeliveryPhoneNumber>12345</bns:DeliveryPhoneNumber>
         <bns:Company>The Company</bns:Company>
       </bns:ShipmentDetails>
       <bns:BillingDetails>
         <bns:SalutationCode>02</bns:SalutationCode>
-        <bns:FirstName>Jans</bns:FirstName>
+        <bns:Firstname>Jans</bns:Firstname>
         <bns:Surname>Janssen</bns:Surname>
         <bns:Streetname>Billingstraat</bns:Streetname>
         <bns:Housenumber>1</bns:Housenumber>
         <bns:HousenumberExtended>a</bns:HousenumberExtended>
-        <bns:AddressSupplement>Onder de brievanbus huisnummer 1</bns:AddressSupplement>
+        <bns:AddressSupplement>Onder de brievenbus</bns:AddressSupplement>
         <bns:ZipCode>5000 ZZ</bns:ZipCode>
         <bns:City>Amsterdam</bns:City>
         <bns:CountryCode>NL</bns:CountryCode>
         <bns:Email>dontemail@me.net</bns:Email>
-        <bns:Telephone>67890</bns:Telephone>
+        <bns:DeliveryPhoneNumber>67890</bns:DeliveryPhoneNumber>
         <bns:Company>Bol.com</bns:Company>
       </bns:BillingDetails>
-    </bns:Buyer>
-    <bns:OpenOrderItems>
-      <bns:OpenOrderItem>
+    </bns:CustomerDetails>
+    <bns:OrderItems>
+      <bns:OrderItem>
         <bns:OrderItemId>123</bns:OrderItemId>
         <bns:EAN>9789062387410</bns:EAN>
-        <bns:ReferenceCode>PARTNERREF001</bns:ReferenceCode>
+        <bns:OfferReference>PARTNERREF001</bns:OfferReference>
         <bns:Title>Regelmaat en Inbakeren</bns:Title>
         <bns:Quantity>1</bns:Quantity>
-        <bns:Price>123.45</bns:Price>
-        <bns:DeliveryPeriod>Binnen 24 uur</bns:DeliveryPeriod>
+        <bns:OfferPrice>123.45</bns:OfferPrice>
+        <bns:PromisedDeliveryDate>Binnen 24 uur</bns:PromisedDeliveryDate>
         <bns:TransactionFee>19.12</bns:TransactionFee>
-      </bns:OpenOrderItem>
-    </bns:OpenOrderItems>
-  </bns:OpenOrder>
-</bns:OpenOrders>"""
+      </bns:OrderItem>
+    </bns:OrderItems>
+  </bns:Order>
+</bns:Orders>"""
 
 
 PAYMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
-<bns:Payments xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
+<bns:Payments
+    xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
   <bns:Payment>
     <bns:CreditInvoiceNumber>123</bns:CreditInvoiceNumber>
     <bns:DateTimePayment>2015-09-23T21:35:43</bns:DateTimePayment>
     <bns:PaymentAmount>425.77</bns:PaymentAmount>
     <bns:PaymentShipments>
       <bns:PaymentShipment>
-        <bns:PackageSlipNumber>456</bns:PackageSlipNumber>
+        <bns:ShipmentId>456</bns:ShipmentId>
         <bns:OrderId>123001</bns:OrderId>
         <bns:PaymentShipmentAmount>425.77</bns:PaymentShipmentAmount>
         <bns:PaymentStatus>FINAL</bns:PaymentStatus>
-        <bns:DateTimeShipment>2015-09-23T21:35:43</bns:DateTimeShipment>
+        <bns:ShipmentDate>2015-09-23T21:35:43</bns:ShipmentDate>
         <bns:PaymentShipmentItems>
           <bns:PaymentShipmentItem>
             <bns:OrderItemId>123001001</bns:OrderItemId>
             <bns:EAN>9789062387410</bns:EAN>
-            <bns:ReferenceCode>PARTNERREF001</bns:ReferenceCode>
+            <bns:OfferReference>PARTNERREF001</bns:OfferReference>
             <bns:Quantity>1</bns:Quantity>
-            <bns:Price>425.77</bns:Price>
+            <bns:OfferPrice>425.77</bns:OfferPrice>
             <bns:ShippingContribution>1.95</bns:ShippingContribution>
             <bns:TransactionFee>10.00</bns:TransactionFee>
             <bns:TotalAmount>425.77</bns:TotalAmount>
@@ -94,17 +95,18 @@ PAYMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
 
 
 PROCESS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<bns:ProcessOrdersResult xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
+<bns:ProcessOrdersResult
+    xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
     <bns:ProcessOrderId>123</bns:ProcessOrderId>
 </bns:ProcessOrdersResult>"""
 
 
-@urlmatch(path=r'/services/rest/orders/v1/open$')
+@urlmatch(path=r'/services/rest/orders/v2/$')
 def orders_stub(url, request):
     return ORDERS_RESPONSE
 
 
-@urlmatch(path=r'/services/rest/payments/v1/payments/201501$')
+@urlmatch(path=r'/services/rest/payments/v2/201501$')
 def payments_stub(url, request):
     return PAYMENTS_RESPONSE
 
@@ -117,69 +119,87 @@ def test_orders():
 
         order = orders[0]
         assert order.OrderId == '123'
-        assert order.Paid is True
 
-        assert order.Buyer.BillingDetails.SalutationCode == '02'
-        assert order.Buyer.BillingDetails.FirstName == 'Jans'
-        assert order.Buyer.BillingDetails.Surname == 'Janssen'
-        assert order.Buyer.BillingDetails.Streetname == 'Billingstraat'
-        assert order.Buyer.BillingDetails.Housenumber == '1'
-        assert order.Buyer.BillingDetails.HousenumberExtended == 'a'
-        assert order.Buyer.BillingDetails.AddressSupplement == 'Onder de brievanbus huisnummer 1'
-        assert order.Buyer.BillingDetails.ZipCode == '5000 ZZ'
-        assert order.Buyer.BillingDetails.City == 'Amsterdam'
-        assert order.Buyer.BillingDetails.CountryCode == 'NL'
-        assert order.Buyer.BillingDetails.Email == 'dontemail@me.net'
-        assert order.Buyer.BillingDetails.Telephone == '67890'
-        assert order.Buyer.BillingDetails.Company == 'Bol.com'
+        assert order.CustomerDetails.BillingDetails.SalutationCode == '02'
+        assert order.CustomerDetails.BillingDetails.Firstname == 'Jans'
+        assert order.CustomerDetails.BillingDetails.Surname == 'Janssen'
+        assert (
+            order.CustomerDetails.BillingDetails.Streetname ==
+            'Billingstraat')
+        assert order.CustomerDetails.BillingDetails.Housenumber == '1'
+        assert order.CustomerDetails.BillingDetails.HousenumberExtended == 'a'
+        assert (
+            order.CustomerDetails.BillingDetails.AddressSupplement ==
+            'Onder de brievenbus')
+        assert order.CustomerDetails.BillingDetails.ZipCode == '5000 ZZ'
+        assert order.CustomerDetails.BillingDetails.City == 'Amsterdam'
+        assert order.CustomerDetails.BillingDetails.CountryCode == 'NL'
+        assert order.CustomerDetails.BillingDetails.Email == 'dontemail@me.net'
+        assert (
+            order.CustomerDetails.BillingDetails.DeliveryPhoneNumber ==
+            '67890')
+        assert order.CustomerDetails.BillingDetails.Company == 'Bol.com'
 
-        assert order.Buyer.ShipmentDetails.SalutationCode == '01'
-        assert order.Buyer.ShipmentDetails.FirstName == 'Jan'
-        assert order.Buyer.ShipmentDetails.Surname == 'Janssen'
-        assert order.Buyer.ShipmentDetails.Streetname == 'Shipmentstraat'
-        assert order.Buyer.ShipmentDetails.Housenumber == '42'
-        assert order.Buyer.ShipmentDetails.HousenumberExtended == 'bis'
-        assert order.Buyer.ShipmentDetails.AddressSupplement == '3 hoog achter'
-        assert order.Buyer.ShipmentDetails.ZipCode == '1000 AA'
-        assert order.Buyer.ShipmentDetails.City == 'Amsterdam'
-        assert order.Buyer.ShipmentDetails.CountryCode == 'NL'
-        assert order.Buyer.ShipmentDetails.Email == 'nospam4me@myaccount.com'
-        assert order.Buyer.ShipmentDetails.Telephone == '12345'
-        assert order.Buyer.ShipmentDetails.Company == 'The Company'
+        assert order.CustomerDetails.ShipmentDetails.SalutationCode == '01'
+        assert order.CustomerDetails.ShipmentDetails.Firstname == 'Jan'
+        assert order.CustomerDetails.ShipmentDetails.Surname == 'Janssen'
+        assert (
+            order.CustomerDetails.ShipmentDetails.Streetname ==
+            'Shipmentstraat')
+        assert order.CustomerDetails.ShipmentDetails.Housenumber == '42'
+        assert (
+            order.CustomerDetails.ShipmentDetails.HousenumberExtended == 'bis')
 
-        assert len(order.OpenOrderItems) == 1
-        item = order.OpenOrderItems[0]
+        assert (
+            order.CustomerDetails.ShipmentDetails.AddressSupplement ==
+            '3 hoog achter')
+        assert order.CustomerDetails.ShipmentDetails.ZipCode == '1000 AA'
+        assert order.CustomerDetails.ShipmentDetails.City == 'Amsterdam'
+        assert order.CustomerDetails.ShipmentDetails.CountryCode == 'NL'
+        assert (
+            order.CustomerDetails.ShipmentDetails.Email ==
+            'nospam4me@myaccount.com')
+        assert (
+            order.CustomerDetails.ShipmentDetails.DeliveryPhoneNumber ==
+            '12345')
+        assert order.CustomerDetails.ShipmentDetails.Company == 'The Company'
+
+        assert len(order.OrderItems) == 1
+        item = order.OrderItems[0]
 
         assert item.OrderItemId == '123'
         assert item.EAN == '9789062387410'
-        assert item.ReferenceCode == 'PARTNERREF001'
+        assert item.OfferReference == 'PARTNERREF001'
         assert item.Title == 'Regelmaat en Inbakeren'
         assert item.Quantity == 1
-        assert item.Price == Decimal('123.45')
-        assert item.DeliveryPeriod == 'Binnen 24 uur'
+        assert item.OfferPrice == Decimal('123.45')
+        assert item.PromisedDeliveryDate == 'Binnen 24 uur'
         assert item.TransactionFee == Decimal('19.12')
 
 
 def test_order_process():
-    @urlmatch(path=r'/services/rest/orders/v1/process$')
+    @urlmatch(path=r'/services/rest/orders/v2/process$')
     def process_stub(url, request):
-        assert request.body == (
-            '<?xml version="1.0" encoding="UTF-8"?>'
-            '<ProcessOrders xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">'  # noqa
-                '<Shipments>'
-                    '<Shipment>'
-                        '<OrderId>123</OrderId>'
-                        '<DateTime>2015-01-02T12:11:00</DateTime>'
-                        '<Transporter>'
-                            '<Code>DHLFORYOU</Code>'
-                            '<TrackAndTraceCode>1234</TrackAndTraceCode>'
-                        '</Transporter>'
-                        '<OrderItems>'
-                            '<Id>34567</Id>'
-                        '</OrderItems>'
-                    '</Shipment>'
-                '</Shipments>'
-            '</ProcessOrders>')
+        assert request.body == """<?xml version="1.0" encoding="UTF-8"?>
+<ProcessOrders
+    xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
+    <Shipments>
+        <Shipment>
+            <OrderId>123</OrderId>
+            <DateTime>2015-01-02T12:11:00</DateTime>
+            <Transporter>
+                <Code>DHLFORYOU</Code>
+                <TrackAndTraceCode>1234</TrackAndTraceCode>
+            </Transporter>
+            <OrderItems>
+                <Id>34567</Id>
+            </OrderItems>
+        </Shipment>
+    </Shipments>
+</ProcessOrders>
+"""
         return PROCESS_RESPONSE
 
     with HTTMock(process_stub):
@@ -206,6 +226,6 @@ def test_payments():
         assert len(payment.PaymentShipments) == 1
         shipment = payment.PaymentShipments[0]
         assert shipment.OrderId == '123001'
-        assert shipment.PackageSlipNumber == '456'
+        assert shipment.ShipmentId == '456'
         assert shipment.PaymentShipmentAmount == Decimal('425.77')
         assert shipment.PaymentStatus == 'FINAL'

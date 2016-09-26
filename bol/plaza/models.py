@@ -83,48 +83,47 @@ class ShipmentDetails(Model):
         pass
 
 
-class Buyer(Model):
+class CustomerDetails(Model):
 
     class Meta:
         ShipmentDetails = ModelField(ShipmentDetails)
         BillingDetails = ModelField(BillingDetails)
 
 
-class OpenOrderItem(Model):
+class OrderItem(Model):
 
     class Meta:
-        Price = DecimalField()
+        OfferPrice = DecimalField()
         TransactionFee = DecimalField()
         Quantity = IntegerField()
 
 
-class OpenOrderItems(ModelList):
+class OrderItems(ModelList):
 
     class Meta:
-        item_type = OpenOrderItem
+        item_type = OrderItem
 
 
-class OpenOrder(Model):
+class Order(Model):
 
     class Meta:
-        Paid = BooleanField()
-        Buyer = ModelField(Buyer)
-        OpenOrderItems = ModelField(OpenOrderItems)
+        CustomerDetails = ModelField(CustomerDetails)
+        OrderItems = ModelField(OrderItems)
         DateTimeCustomer = DateTimeField()
         DateTimeDropShipper = DateTimeField()
 
 
-class OpenOrders(ModelList):
+class Orders(ModelList):
 
     class Meta:
-        item_type = OpenOrder
+        item_type = Order
 
 
 class PaymentShipmentItem(Model):
 
     class Meta:
         Quantity = IntegerField()
-        Price = DecimalField()
+        OfferPrice = DecimalField()
         TransactionFee = DecimalField()
         TotalAmount = DecimalField()
         ShippingContribution = DecimalField()
@@ -141,7 +140,7 @@ class PaymentShipment(Model):
     class Meta:
 
         PaymentShipmentAmount = DecimalField()
-        DateTimeShipment = DateTimeField()
+        ShipmentDate = DateTimeField()
         PaymentShipmentItems = ModelField(PaymentShipmentItems)
 
 

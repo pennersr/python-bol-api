@@ -5,28 +5,32 @@ import hashlib
 import base64
 from xml.etree import ElementTree
 
-from .models import OpenOrders, Payments
+from .models import Orders, Payments
+
 
 __all__ = ['PlazaAPI']
 
 
-PROCESS_XML = (
-    '<?xml version="1.0" encoding="UTF-8"?>'
-    '<ProcessOrders xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">'  # noqa
-        '<Shipments>'
-            '<Shipment>'
-                '<OrderId>{order_id}</OrderId>'
-                '<DateTime>{date_time}</DateTime>'
-                '<Transporter>'
-                    '<Code>{transporter_code}</Code>'
-                    '<TrackAndTraceCode>{code}</TrackAndTraceCode>'
-                '</Transporter>'
-                '<OrderItems>'
-                    '{order_item_ids}'
-                '</OrderItems>'
-            '</Shipment>'
-        '</Shipments>'
-    '</ProcessOrders>')
+PROCESS_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<ProcessOrders
+    xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
+    <Shipments>
+        <Shipment>
+            <OrderId>{order_id}</OrderId>
+            <DateTime>{date_time}</DateTime>
+            <Transporter>
+                <Code>{transporter_code}</Code>
+                <TrackAndTraceCode>{code}</TrackAndTraceCode>
+            </Transporter>
+            <OrderItems>
+                {order_item_ids}
+            </OrderItems>
+        </Shipment>
+    </Shipments>
+</ProcessOrders>
+"""
 
 
 # https://developers.bol.com/documentatie/plaza-api/developer-guide-plaza-api/appendix-a-transporters/
@@ -59,7 +63,7 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, name, payload=None):
+    def request(self, method, name='', payload=None):
         uri = '/services/rest/{group}/{version}/{name}'.format(
             group=self.group,
             version=self.api.version,
@@ -74,8 +78,8 @@ class OrderMethods(MethodGroup):
         super(OrderMethods, self).__init__(api, 'orders')
 
     def open(self):
-        xml = self.request('GET', 'open')
-        return OpenOrders.parse(self.api, xml)
+        xml = self.request('GET')
+        return Orders.parse(self.api, xml)
 
     def process(self, order_id, date_time, code, transporter_code,
                 order_item_ids):
@@ -90,7 +94,9 @@ class OrderMethods(MethodGroup):
                 '<Id>{}</Id>'.format(i) for i in order_item_ids]))
 
         response = self.request('POST', 'process', payload)
-        return response.find('{http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd}ProcessOrderId').text
+        return response.find(
+            '{http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd}'
+            'ProcessOrderId').text
 
 
 class PaymentMethods(MethodGroup):
@@ -99,7 +105,7 @@ class PaymentMethods(MethodGroup):
         super(PaymentMethods, self).__init__(api, 'payments')
 
     def payments(self, year, month):
-        xml = self.request('GET', 'payments/%d%02d' % (year, month))
+        xml = self.request('GET', '%d%02d' % (year, month))
         return Payments.parse(self.api, xml)
 
 
@@ -109,7 +115,7 @@ class PlazaAPI(object):
         self.public_key = public_key
         self.private_key = private_key
         self.url = 'https://%splazaapi.bol.com' % ('test-' if test else '')
-        self.version = 'v1'
+        self.version = 'v2'
         self.timeout = timeout
         self.orders = OrderMethods(self)
         self.payments = PaymentMethods(self)
