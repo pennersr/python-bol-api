@@ -200,3 +200,9 @@ class Shipments(ModelList):
 
     class Meta:
         item_type = Shipment
+
+
+class ProcessStatus(Model):
+
+    class Meta:
+        pass

@@ -95,13 +95,6 @@ PAYMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
 </bns:Payments>"""
 
 
-PROCESS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<bns:ProcessOrdersResult
-    xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
-    <bns:ProcessOrderId>123</bns:ProcessOrderId>
-</bns:ProcessOrdersResult>"""
-
-
 SHIPMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Shipments xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
     <Shipment>
@@ -185,6 +178,20 @@ SHIPMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 """
 
 
+CREATE_SHIPMENT_RESPONSE = \
+    """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns1:ProcessStatus
+    xmlns:ns1="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+    <ns1:id>0</ns1:id>
+    <ns1:sellerId>12345678</ns1:sellerId>
+    <ns1:entityId>123</ns1:entityId>
+    <ns1:eventType>CONFIRM_SHIPMENT</ns1:eventType>
+    <ns1:description>Confirm shipment for order item 123.</ns1:description>
+    <ns1:status>PENDING</ns1:status>
+</ns1:ProcessStatus>
+"""
+
+
 @urlmatch(path=r'/services/rest/orders/v2/$')
 def orders_stub(url, request):
     return ORDERS_RESPONSE
@@ -203,7 +210,7 @@ def shipments_stub(url, request):
 def test_orders():
     with HTTMock(orders_stub):
         api = PlazaAPI('api_key', 'api_secret', test=True)
-        orders = api.orders.open()
+        orders = api.orders.list()
         assert len(orders) == 1
 
         order = orders[0]
@@ -267,39 +274,32 @@ def test_orders():
 
 
 def test_order_process():
-    @urlmatch(path=r'/services/rest/orders/v2/process$')
-    def process_stub(url, request):
+    @urlmatch(path=r'/services/rest/shipments/v2/$')
+    def create_shipment_stub(url, request):
         assert request.body == """<?xml version="1.0" encoding="UTF-8"?>
-<ProcessOrders
-    xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
-    <Shipments>
-        <Shipment>
-            <OrderId>123</OrderId>
-            <DateTime>2015-01-02T12:11:00</DateTime>
-            <Transporter>
-                <Code>DHLFORYOU</Code>
-                <TrackAndTraceCode>1234</TrackAndTraceCode>
-            </Transporter>
-            <OrderItems>
-                <Id>34567</Id>
-            </OrderItems>
-        </Shipment>
-    </Shipments>
-</ProcessOrders>
+<ShipmentRequest xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+    <DateTime>2016-10-01T01:08:17</DateTime>
+    <OrderItemId>123</OrderItemId>
+    <ShipmentReference>abc</ShipmentReference>
+    <Transport>
+        <TrackAndTrace>3S123</TrackAndTrace>
+        <TransporterCode>GLS</TransporterCode>
+    </Transport>
+</ShipmentRequest>
 """
-        return PROCESS_RESPONSE
+        return CREATE_SHIPMENT_RESPONSE
 
-    with HTTMock(process_stub):
+    with HTTMock(create_shipment_stub):
         api = PlazaAPI('api_key', 'api_secret', test=True)
-        process_id = api.orders.process(
-            order_id='123',
-            date_time=datetime(2015, 1, 2, 12, 11, 0),
-            code='1234',
-            transporter_code='DHLFORYOU',
-            order_item_ids=['34567'])
-        assert process_id == '123'
+        dt = datetime(2016, 10, 1, 1, 8, 17, 0)
+        process_status = api.shipments.create(
+            order_item_id='123',
+            date_time=dt,
+            expected_delivery_date=None,
+            shipment_reference='abc',
+            transporter_code='GLS',
+            track_and_trace='3S123')
+        assert process_status.sellerId == '12345678'
 
 
 def test_payments():

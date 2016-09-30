@@ -3,35 +3,15 @@ import requests
 import hmac
 import hashlib
 import base64
+from datetime import datetime
+import collections
+
 from xml.etree import ElementTree
 
-from .models import Orders, Payments, Shipments
+from .models import Orders, Payments, Shipments, ProcessStatus
 
 
 __all__ = ['PlazaAPI']
-
-
-PROCESS_XML = """<?xml version="1.0" encoding="UTF-8"?>
-<ProcessOrders
-    xmlns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
-    <Shipments>
-        <Shipment>
-            <OrderId>{order_id}</OrderId>
-            <DateTime>{date_time}</DateTime>
-            <Transporter>
-                <Code>{transporter_code}</Code>
-                <TrackAndTraceCode>{code}</TrackAndTraceCode>
-            </Transporter>
-            <OrderItems>
-                {order_item_ids}
-            </OrderItems>
-        </Shipment>
-    </Shipments>
-</ProcessOrders>
-"""
-
 
 # https://developers.bol.com/documentatie/plaza-api/developer-guide-plaza-api/appendix-a-transporters/
 TRANSPORTER_CODES = {
@@ -71,32 +51,51 @@ class MethodGroup(object):
         xml = self.api.request(method, uri, payload)
         return xml
 
+    def create_request_xml(self, root, **kwargs):
+        elements = self._create_request_xml_elements(1, **kwargs)
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<{root} xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+{elements}
+</{root}>
+""".format(root=root, elements=elements)
+        return xml
+
+    def _create_request_xml_elements(self, indent, **kwargs):
+        # sort to make output deterministic
+        kwargs = collections.OrderedDict(sorted(kwargs.items()))
+        xml = ''
+        for tag, value in kwargs.items():
+            if value is not None:
+                prefix = ' ' * 4 * indent
+                if isinstance(value, dict):
+                    text = '\n{}\n{}'.format(
+                        self._create_request_xml_elements(
+                            indent + 1, **value),
+                        prefix)
+                elif isinstance(value, datetime):
+                    text = value.isoformat()
+                else:
+                    text = str(value)
+                # TODO: Escape! For now this will do I am only dealing
+                # with track & trace codes and simplistic IDs...
+                if xml:
+                    xml += '\n'
+                xml += prefix
+                xml += "<{tag}>{text}</{tag}>".format(
+                    tag=tag,
+                    text=text
+                )
+        return xml
+
 
 class OrderMethods(MethodGroup):
 
     def __init__(self, api):
         super(OrderMethods, self).__init__(api, 'orders')
 
-    def open(self):
+    def list(self):
         xml = self.request('GET')
         return Orders.parse(self.api, xml)
-
-    def process(self, order_id, date_time, code, transporter_code,
-                order_item_ids):
-        assert transporter_code in TRANSPORTER_CODES
-
-        payload = PROCESS_XML.format(
-            order_id=order_id,
-            date_time=date_time.replace(microsecond=0).isoformat(),
-            code=code,
-            transporter_code=transporter_code,
-            order_item_ids=''.join([
-                '<Id>{}</Id>'.format(i) for i in order_item_ids]))
-
-        response = self.request('POST', 'process', payload)
-        return response.find(
-            '{http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd}'
-            'ProcessOrderId').text
 
 
 class PaymentMethods(MethodGroup):
@@ -118,6 +117,24 @@ class ShipmentMethods(MethodGroup):
         # TODO: use page
         xml = self.request('GET')
         return Shipments.parse(self.api, xml)
+
+    def create(self, order_item_id, date_time, expected_delivery_date,
+               shipment_reference=None, transporter_code=None,
+               track_and_trace=None):
+        if transporter_code:
+            assert transporter_code in TRANSPORTER_CODES
+        xml = self.create_request_xml(
+            'ShipmentRequest',
+            OrderItemId=order_item_id,
+            DateTime=date_time,
+            ShipmentReference=shipment_reference,
+            ExpectedDeliveryDate=expected_delivery_date,
+            Transport={
+                'TransporterCode': transporter_code,
+                'TrackAndTrace': track_and_trace
+            })
+        response = self.request('POST', payload=xml)
+        return ProcessStatus.parse(self.api, response)
 
 
 class PlazaAPI(object):
