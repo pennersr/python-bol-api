@@ -1,5 +1,6 @@
 from decimal import Decimal
 from datetime import datetime
+from dateutil.tz import tzoffset
 
 from bol.plaza.api import PlazaAPI
 
@@ -101,6 +102,89 @@ PROCESS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </bns:ProcessOrdersResult>"""
 
 
+SHIPMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Shipments xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+    <Shipment>
+        <ShipmentId>123</ShipmentId>
+        <ShipmentDate>2016-09-19T18:21:59.324+02:00</ShipmentDate>
+        <ExpectedDeliveryDate>2016-09-19+02:00</ExpectedDeliveryDate>
+        <ShipmentReference>shipmentReferentie</ShipmentReference>
+        <ShipmentItems>
+            <ShipmentItem>
+                <OrderItem>
+                    <OrderItemId>5612423</OrderItemId>
+                    <OrderId>7464</OrderId>
+                    <OrderItemSequenceNumber>2</OrderItemSequenceNumber>
+                    <OrderDate>2016-09-17T18:21:59.324+02:00</OrderDate>
+                    <PromisedDeliveryDate>2016-09-20+02:00</PromisedDeliveryDate>
+                    <EAN>9789062387410</EAN>
+                    <Title>Harry Potter</Title>
+                    <Quantity>1</Quantity>
+                    <OfferPrice>123.45</OfferPrice>
+                    <OfferCondition>NEW</OfferCondition>
+                    <OfferReference>MijnOffer 123</OfferReference>
+                    <FulfilmentMethod>FBR</FulfilmentMethod>
+                </OrderItem>
+            </ShipmentItem>
+        </ShipmentItems>
+        <Transport>
+            <TransportId>8444626</TransportId>
+            <TransporterCode>DHLFORYOU</TransporterCode>
+            <TrackAndTrace>3stest</TrackAndTrace>
+            <ShippingLabelId>349</ShippingLabelId>
+        </Transport>
+        <CustomerDetails>
+            <FirstName>Jan</FirstName>
+            <Surname>Janssen</Surname>
+            <Streetname>Vogelstraat</Streetname>
+            <Housenumber>42</Housenumber>
+            <HousenumberExtended>bis</HousenumberExtended>
+            <AddressSupplement>3 hoog achter</AddressSupplement>
+            <ExtraAddressInformation>extra adres info</ExtraAddressInformation>
+            <ZipCode>1000 AA</ZipCode>
+            <City>Amsterdam</City>
+            <CountryCode>NL</CountryCode>
+            <Email>nospam4me@myaccount.com</Email>
+            <DeliveryPhoneNumber>12345</DeliveryPhoneNumber>
+            <Company>The Company</Company>
+            <VatNumber>VatNumber12</VatNumber>
+        </CustomerDetails>
+    </Shipment>
+    <Shipment>
+        <ShipmentDate>2016-09-19T18:21:59.325+02:00</ShipmentDate>
+        <ShipmentItems>
+            <ShipmentItem>
+                <OrderItem>
+                    <OrderItemId>8812523</OrderItemId>
+                    <OrderId>7464</OrderId>
+                    <OrderItemSequenceNumber>2</OrderItemSequenceNumber>
+                    <OrderDate>2016-09-17T18:21:59.325+02:00</OrderDate>
+                    <EAN>9789062387410</EAN>
+                    <Quantity>1</Quantity>
+                    <OfferPrice>123.45</OfferPrice>
+                    <OfferCondition>NEW</OfferCondition>
+                    <FulfilmentMethod>FBR</FulfilmentMethod>
+                </OrderItem>
+            </ShipmentItem>
+        </ShipmentItems>
+        <Transport>
+            <ShippingLabelId>1807</ShippingLabelId>
+        </Transport>
+        <CustomerDetails>
+            <FirstName>Jan</FirstName>
+            <Surname>Janssen</Surname>
+            <Streetname>Vogelstraat</Streetname>
+            <Housenumber>42</Housenumber>
+            <ZipCode>1000 AA</ZipCode>
+            <City>Amsterdam</City>
+            <CountryCode>NL</CountryCode>
+            <Email>nospam4me@myaccount.com</Email>
+        </CustomerDetails>
+    </Shipment>
+</Shipments>
+"""
+
+
 @urlmatch(path=r'/services/rest/orders/v2/$')
 def orders_stub(url, request):
     return ORDERS_RESPONSE
@@ -109,6 +193,11 @@ def orders_stub(url, request):
 @urlmatch(path=r'/services/rest/payments/v2/201501$')
 def payments_stub(url, request):
     return PAYMENTS_RESPONSE
+
+
+@urlmatch(path=r'/services/rest/shipments/v2/$')
+def shipments_stub(url, request):
+    return SHIPMENTS_RESPONSE
 
 
 def test_orders():
@@ -216,7 +305,7 @@ def test_order_process():
 def test_payments():
     with HTTMock(payments_stub):
         api = PlazaAPI('api_key', 'api_secret', test=True)
-        payments = api.payments.payments(2015, 1)
+        payments = api.payments.list(2015, 1)
 
         assert len(payments) == 1
         payment = payments[0]
@@ -229,3 +318,16 @@ def test_payments():
         assert shipment.ShipmentId == '456'
         assert shipment.PaymentShipmentAmount == Decimal('425.77')
         assert shipment.PaymentStatus == 'FINAL'
+
+
+def test_shipments():
+    with HTTMock(shipments_stub):
+        api = PlazaAPI('api_key', 'api_secret', test=True)
+        shipments = api.shipments.list(1)
+
+        assert len(shipments) == 2
+        shipment = shipments[0]
+        assert shipment.ShipmentDate == datetime(
+            2016, 9, 19, 18, 21, 59, 324000, tzinfo=tzoffset(None, 7200))
+        assert shipment.ExpectedDeliveryDate == datetime(
+            2016, 9, 19, 0, 0, tzinfo=tzoffset(None, 7200))

@@ -5,7 +5,7 @@ import hashlib
 import base64
 from xml.etree import ElementTree
 
-from .models import Orders, Payments
+from .models import Orders, Payments, Shipments
 
 
 __all__ = ['PlazaAPI']
@@ -104,9 +104,20 @@ class PaymentMethods(MethodGroup):
     def __init__(self, api):
         super(PaymentMethods, self).__init__(api, 'payments')
 
-    def payments(self, year, month):
+    def list(self, year, month):
         xml = self.request('GET', '%d%02d' % (year, month))
         return Payments.parse(self.api, xml)
+
+
+class ShipmentMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(ShipmentMethods, self).__init__(api, 'shipments')
+
+    def list(self, page=1):
+        # TODO: use page
+        xml = self.request('GET')
+        return Shipments.parse(self.api, xml)
 
 
 class PlazaAPI(object):
@@ -119,6 +130,7 @@ class PlazaAPI(object):
         self.timeout = timeout
         self.orders = OrderMethods(self)
         self.payments = PaymentMethods(self)
+        self.shipments = ShipmentMethods(self)
 
     def request(self, method, uri, payload=None):
         content_type = 'application/xml; charset=UTF-8'

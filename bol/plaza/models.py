@@ -29,7 +29,15 @@ class DecimalField(Field):
 class DateTimeField(Field):
 
     def parse(self, api, xml, instance):
-        return dateutil.parser.parse(xml.text)
+        # WORKAROUND: At least on the test API I am bumping into this kind of
+        # data: '2016-09-19+02:00'. Here, the time seems missing, only the
+        # timezone offset is present. Let's detect this and handle gracefully.
+        # Contacted BOL, awaiting reply...
+        text = xml.text
+        if text[10] == '+':
+            text = text[:10] + 'T00:00:00' + text[10:]
+        # (end WORKAROUND)
+        return dateutil.parser.parse(text)
 
 
 class IntegerField(Field):
@@ -56,7 +64,11 @@ class Model(object):
         for element in xml.getchildren():
             tag = element.tag.partition('}')[2]
             field = getattr(m.Meta, tag, TextField())
-            setattr(m, tag, field.parse(api, element, m))
+            try:
+                setattr(m, tag, field.parse(api, element, m))
+            except:
+                import pdb
+                pdb.set_trace()
         return m
 
 
@@ -162,3 +174,29 @@ class Payments(ModelList):
 
     class Meta:
         item_type = Payment
+
+
+class ShipmentItem(Model):
+
+    class Meta:
+        OrderItem = ModelField(OrderItem)
+
+
+class ShipmentItems(ModelList):
+
+    class Meta:
+        item_type = ShipmentItem
+
+
+class Shipment(Model):
+
+    class Meta:
+        ShipmentDate = DateTimeField()
+        ExpectedDeliveryDate = DateTimeField()
+        ShipmentItems = ModelField(ShipmentItems)
+
+
+class Shipments(ModelList):
+
+    class Meta:
+        item_type = Shipment
