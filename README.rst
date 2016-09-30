@@ -46,7 +46,7 @@ Instantiate the API::
 
 Invoke a method::
 
-    >>> open_orders = api.orders.open()
+    >>> open_orders = api.orders.list()
 
 Fields are derived 1:1 from the bol.com API XML, including
 CamelCase conventions::
@@ -58,7 +58,7 @@ Fields are properly typed::
 
     >>> open_orders[0].Paid
     True
-    >>> open_orders[0].OpenOrderItems[0].TransactionFee
+    >>> open_orders[0].OrderItems[0].TransactionFee
     Decimal('19.12')
     >>> open_orders[0].DateTimeDropShipper
     datetime.datetime(2014, 2, 10, 12, 7, 7)
