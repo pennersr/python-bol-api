@@ -2,7 +2,7 @@ from decimal import Decimal
 from datetime import datetime
 from dateutil.tz import tzoffset
 
-from bol.plaza.api import PlazaAPI
+from bol.plaza.api import PlazaAPI, TransporterCode
 
 from httmock import HTTMock, urlmatch
 
@@ -297,7 +297,7 @@ def test_order_process():
             date_time=dt,
             expected_delivery_date=None,
             shipment_reference='abc',
-            transporter_code='GLS',
+            transporter_code=TransporterCode.GLS,
             track_and_trace='3S123')
         assert process_status.sellerId == '12345678'
 

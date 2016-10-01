@@ -1,6 +1,15 @@
+import sys
 from setuptools import setup, find_packages
 
 VERSION = '0.3.0'
+
+IS_PY2 = sys.version_info[0] < 3
+
+install_requires = [
+    'python-dateutil',
+    'requests']
+if IS_PY2:
+    install_requires.append('enum34')
 
 setup(name='python-bol-api',
       version=VERSION,
@@ -28,6 +37,5 @@ setup(name='python-bol-api',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=['python-dateutil',
-                        'requests'],
+      install_requires=install_requires,
       entry_points="")

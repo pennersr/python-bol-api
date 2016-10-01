@@ -5,6 +5,7 @@ import hashlib
 import base64
 from datetime import datetime
 import collections
+from enum import Enum
 
 from xml.etree import ElementTree
 
@@ -13,28 +14,30 @@ from .models import Orders, Payments, Shipments, ProcessStatus
 
 __all__ = ['PlazaAPI']
 
-# https://developers.bol.com/documentatie/plaza-api/developer-guide-plaza-api/appendix-a-transporters/
-TRANSPORTER_CODES = {
-    'DHLFORYOU',
-    'UPS',
-    'KIALA_BE',
-    'KIALA_NL',
-    'TNT',
-    'TNT_EXTRA',
-    'TNT_BRIEF',
-    'SLV',
-    'DYL',
-    'DPD_NL',
-    'DPD_BE',
-    'BPOST_BE',
-    'BPOST_BRIEF',
-    'BRIEFPOST',
-    'GLS',
-    'FEDEX_NL',
-    'FEDEX_BE',
-    'OTHER',
-    'DHL',
-}
+
+class TransporterCode(Enum):
+    """
+    https://developers.bol.com/documentatie/plaza-api/developer-guide-plaza-api/appendix-a-transporters/
+    """
+    DHLFORYOU = 'DHLFORYOU'
+    UPS = 'UPS'
+    KIALA_BE = 'KIALA_BE'
+    KIALA_NL = 'KIALA_NL'
+    TNT = 'TNT'
+    TNT_EXTRA = 'TNT_EXTRA'
+    TNT_BRIEF = 'TNT_BRIEF'
+    SLV = 'SLV'
+    DYL = 'DYL'
+    DPD_NL = 'DPD_NL'
+    DPD_BE = 'DPD_BE'
+    BPOST_BE = 'BPOST_BE'
+    BPOST_BRIEF = 'BPOST_BRIEF'
+    BRIEFPOST = 'BRIEFPOST'
+    GLS = 'GLS'
+    FEDEX_NL = 'FEDEX_NL'
+    FEDEX_BE = 'FEDEX_BE'
+    OTHER = 'OTHER'
+    DHL = 'DHL'
 
 
 class MethodGroup(object):
@@ -122,7 +125,10 @@ class ShipmentMethods(MethodGroup):
                shipment_reference=None, transporter_code=None,
                track_and_trace=None):
         if transporter_code:
-            assert transporter_code in TRANSPORTER_CODES
+            if isinstance(transporter_code, TransporterCode):
+                transporter_code = transporter_code.value
+            assert transporter_code in map(
+                lambda c: c.value, list(TransporterCode))
         xml = self.create_request_xml(
             'ShipmentRequest',
             OrderItemId=order_item_id,
