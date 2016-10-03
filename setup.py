@@ -1,8 +1,10 @@
 import sys
 from setuptools import setup, find_packages
 
-VERSION = '0.3.0'
+import bol
 
+# Dynamically calculate the version based on actistream.VERSION.
+VERSION = bol.__version__
 IS_PY2 = sys.version_info[0] < 3
 
 install_requires = [
