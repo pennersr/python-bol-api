@@ -192,7 +192,7 @@ CREATE_SHIPMENT_RESPONSE = \
 """
 
 
-@urlmatch(path=r'/services/rest/orders/v2/$')
+@urlmatch(path=r'/services/rest/orders/v2$')
 def orders_stub(url, request):
     return ORDERS_RESPONSE
 
@@ -202,7 +202,7 @@ def payments_stub(url, request):
     return PAYMENTS_RESPONSE
 
 
-@urlmatch(path=r'/services/rest/shipments/v2/$')
+@urlmatch(path=r'/services/rest/shipments/v2$')
 def shipments_stub(url, request):
     return SHIPMENTS_RESPONSE
 
@@ -274,7 +274,7 @@ def test_orders():
 
 
 def test_order_process():
-    @urlmatch(path=r'/services/rest/shipments/v2/$')
+    @urlmatch(path=r'/services/rest/shipments/v2$')
     def create_shipment_stub(url, request):
         assert request.body == """<?xml version="1.0" encoding="UTF-8"?>
 <ShipmentRequest xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">

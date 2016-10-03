@@ -46,12 +46,12 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, name='', payload=None):
-        uri = '/services/rest/{group}/{version}/{name}'.format(
+    def request(self, method, path='', params={}, data=None):
+        uri = '/services/rest/{group}/{version}{path}'.format(
             group=self.group,
             version=self.api.version,
-            name=name)
-        xml = self.api.request(method, uri, payload)
+            path=path)
+        xml = self.api.request(method, uri, params=params, data=data)
         return xml
 
     def create_request_xml(self, root, **kwargs):
@@ -107,7 +107,7 @@ class PaymentMethods(MethodGroup):
         super(PaymentMethods, self).__init__(api, 'payments')
 
     def list(self, year, month):
-        xml = self.request('GET', '%d%02d' % (year, month))
+        xml = self.request('GET', '/%d%02d' % (year, month))
         return Payments.parse(self.api, xml)
 
 
@@ -116,9 +116,12 @@ class ShipmentMethods(MethodGroup):
     def __init__(self, api):
         super(ShipmentMethods, self).__init__(api, 'shipments')
 
-    def list(self, page=1):
-        # TODO: use page
-        xml = self.request('GET')
+    def list(self, page=None):
+        if page is not None:
+            params = {'page': page}
+        else:
+            params = None
+        xml = self.request('GET', params=params)
         return Shipments.parse(self.api, xml)
 
     def create(self, order_item_id, date_time, expected_delivery_date,
@@ -139,7 +142,7 @@ class ShipmentMethods(MethodGroup):
                 'TransporterCode': transporter_code,
                 'TrackAndTrace': track_and_trace
             })
-        response = self.request('POST', payload=xml)
+        response = self.request('POST', data=xml)
         return ProcessStatus.parse(self.api, response)
 
 
@@ -155,7 +158,7 @@ class PlazaAPI(object):
         self.payments = PaymentMethods(self)
         self.shipments = ShipmentMethods(self)
 
-    def request(self, method, uri, payload=None):
+    def request(self, method, uri, params={}, data=None):
         content_type = 'application/xml; charset=UTF-8'
         date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
         msg = """{method}
@@ -180,13 +183,15 @@ x-bol-date:{date}
         if method == 'GET':
             resp = requests.get(
                 self.url + uri,
+                params=params,
                 headers=headers,
                 timeout=self.timeout)
         elif method == 'POST':
             resp = requests.post(
                 self.url + uri,
                 headers=headers,
-                data=payload,
+                params=params,
+                data=data,
                 timeout=self.timeout)
         else:
             raise ValueError
