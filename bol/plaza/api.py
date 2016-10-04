@@ -111,6 +111,16 @@ class PaymentMethods(MethodGroup):
         return Payments.parse(self.api, xml)
 
 
+class ProcessStatusMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(ProcessStatusMethods, self).__init__(api, 'process-status')
+
+    def get(self, id):
+        xml = self.request('GET', '/{}'.format(id))
+        return ProcessStatus.parse(self.api, xml)
+
+
 class ShipmentMethods(MethodGroup):
 
     def __init__(self, api):
@@ -157,6 +167,7 @@ class PlazaAPI(object):
         self.orders = OrderMethods(self)
         self.payments = PaymentMethods(self)
         self.shipments = ShipmentMethods(self)
+        self.process_status = ProcessStatusMethods(self)
 
     def request(self, method, uri, params={}, data=None):
         content_type = 'application/xml; charset=UTF-8'
