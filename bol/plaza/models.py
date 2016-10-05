@@ -64,11 +64,7 @@ class Model(object):
         for element in xml.getchildren():
             tag = element.tag.partition('}')[2]
             field = getattr(m.Meta, tag, TextField())
-            try:
-                setattr(m, tag, field.parse(api, element, m))
-            except:
-                import pdb
-                pdb.set_trace()
+            setattr(m, tag, field.parse(api, element, m))
         return m
 
 
