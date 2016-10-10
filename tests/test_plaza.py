@@ -191,6 +191,19 @@ CREATE_SHIPMENT_RESPONSE = \
 </ns1:ProcessStatus>
 """
 
+UPDATE_TRANSPORT_RESPONSE = \
+     """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns1:ProcessStatus
+     xmlns:ns1="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+     <ns1:id>0</ns1:id>
+     <ns1:sellerId>925853</ns1:sellerId>
+     <ns1:entityId>1</ns1:entityId>
+     <ns1:eventType>CHANGE_TRANSPORT</ns1:eventType>
+     <ns1:description>Change transport with id 1.</ns1:description>
+     <ns1:status>PENDING</ns1:status>
+</ns1:ProcessStatus>
+"""
+
 
 @urlmatch(path=r'/services/rest/orders/v2$')
 def orders_stub(url, request):
@@ -331,3 +344,24 @@ def test_shipments():
             2016, 9, 19, 18, 21, 59, 324000, tzinfo=tzoffset(None, 7200))
         assert shipment.ExpectedDeliveryDate == datetime(
             2016, 9, 19, 0, 0, tzinfo=tzoffset(None, 7200))
+
+
+def test_update_transport():
+    @urlmatch(path=r'/services/rest/transports/v2/1$')
+    def create_transport_stub(url, request):
+        assert request.body == """<?xml version="1.0" encoding="UTF-8"?>
+<ChangeTransportRequest xmlns=\
+"https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+    <TrackAndTrace>3S123</TrackAndTrace>
+    <TransporterCode>GLS</TransporterCode>
+</ChangeTransportRequest>
+"""
+        return UPDATE_TRANSPORT_RESPONSE
+
+    with HTTMock(create_transport_stub):
+        api = PlazaAPI('api_key', 'api_secret', test=True)
+        process_status = api.transports.update(
+            1,
+            track_and_trace='3S123',
+            transporter_code=TransporterCode.GLS)
+        assert process_status.sellerId == '925853'

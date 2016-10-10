@@ -39,6 +39,14 @@ class TransporterCode(Enum):
     OTHER = 'OTHER'
     DHL = 'DHL'
 
+    @classmethod
+    def to_string(cls, transporter_code):
+        if isinstance(transporter_code, TransporterCode):
+            transporter_code = transporter_code.value
+        assert transporter_code in map(
+            lambda c: c.value, list(TransporterCode))
+        return transporter_code
+
 
 class MethodGroup(object):
 
@@ -138,10 +146,8 @@ class ShipmentMethods(MethodGroup):
                shipment_reference=None, transporter_code=None,
                track_and_trace=None):
         if transporter_code:
-            if isinstance(transporter_code, TransporterCode):
-                transporter_code = transporter_code.value
-            assert transporter_code in map(
-                lambda c: c.value, list(TransporterCode))
+            transporter_code = TransporterCode.to_string(
+                transporter_code)
         xml = self.create_request_xml(
             'ShipmentRequest',
             OrderItemId=order_item_id,
@@ -153,6 +159,21 @@ class ShipmentMethods(MethodGroup):
                 'TrackAndTrace': track_and_trace
             })
         response = self.request('POST', data=xml)
+        return ProcessStatus.parse(self.api, response)
+
+
+class TransportMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(TransportMethods, self).__init__(api, 'transports')
+
+    def update(self, id, transporter_code, track_and_trace):
+        transporter_code = TransporterCode.to_string(transporter_code)
+        xml = self.create_request_xml(
+            'ChangeTransportRequest',
+            TransporterCode=transporter_code,
+            TrackAndTrace=track_and_trace)
+        response = self.request('PUT', '/{}'.format(id), data=xml)
         return ProcessStatus.parse(self.api, response)
 
 
@@ -168,6 +189,7 @@ class PlazaAPI(object):
         self.payments = PaymentMethods(self)
         self.shipments = ShipmentMethods(self)
         self.process_status = ProcessStatusMethods(self)
+        self.transports = TransportMethods(self)
 
     def request(self, method, uri, params={}, data=None):
         content_type = 'application/xml; charset=UTF-8'
@@ -191,21 +213,16 @@ x-bol-date:{date}
         headers = {'Content-Type': content_type,
                    'X-BOL-Date': date,
                    'X-BOL-Authorization': signature}
-        if method == 'GET':
-            resp = requests.get(
-                self.url + uri,
-                params=params,
-                headers=headers,
-                timeout=self.timeout)
-        elif method == 'POST':
-            resp = requests.post(
-                self.url + uri,
-                headers=headers,
-                params=params,
-                data=data,
-                timeout=self.timeout)
-        else:
-            raise ValueError
+        request_kwargs = {
+            'method': method,
+            'url': self.url + uri,
+            'params': params,
+            'headers': headers,
+            'timeout': self.timeout,
+        }
+        if data:
+            request_kwargs['data'] = data
+        resp = requests.request(**request_kwargs)
         resp.raise_for_status()
         tree = ElementTree.fromstring(resp.content)
         return tree

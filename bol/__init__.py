@@ -1,5 +1,3 @@
-from importlib import import_module
-
 VERSION = (0, 4, 0, 'final', 0)
 
 __title__ = 'python-bol-api'
