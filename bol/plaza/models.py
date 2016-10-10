@@ -184,12 +184,19 @@ class ShipmentItems(ModelList):
         item_type = ShipmentItem
 
 
+class Transport(Model):
+
+    class Meta:
+        pass
+
+
 class Shipment(Model):
 
     class Meta:
         ShipmentDate = DateTimeField()
         ExpectedDeliveryDate = DateTimeField()
         ShipmentItems = ModelField(ShipmentItems)
+        Transport =  ModelField(Transport)
 
 
 class Shipments(ModelList):
