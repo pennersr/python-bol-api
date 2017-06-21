@@ -39,15 +39,16 @@ class CatalogMethods(MethodGroup):
 
 class OpenAPI(object):
 
-    def __init__(self, api_key, timeout=None):
+    def __init__(self, api_key, timeout=None, session=None):
         self.api_key = api_key
         self.url = 'https://api.bol.com'
         self.version = 'v4'
         self.catalog = CatalogMethods(self)
         self.timeout = timeout
+        self.session = session or requests.Session()
 
     def request(self, method, uri, params={}):
-        resp = requests.get(
+        resp = self.session.get(
             self.url + uri,
             params=dict(params, **{'apikey': self.api_key}),
             timeout=self.timeout)

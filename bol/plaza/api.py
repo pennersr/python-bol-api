@@ -188,7 +188,8 @@ class TransportMethods(MethodGroup):
 
 class PlazaAPI(object):
 
-    def __init__(self, public_key, private_key, test=False, timeout=None):
+    def __init__(self, public_key, private_key, test=False, timeout=None,
+                 session=None):
         self.public_key = public_key
         self.private_key = private_key
         self.url = 'https://%splazaapi.bol.com' % ('test-' if test else '')
@@ -199,6 +200,7 @@ class PlazaAPI(object):
         self.shipments = ShipmentMethods(self)
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)
+        self.session = session or requests.Session()
 
     def request(self, method, uri, params={}, data=None):
         content_type = 'application/xml; charset=UTF-8'
@@ -231,7 +233,7 @@ x-bol-date:{date}
         }
         if data:
             request_kwargs['data'] = data
-        resp = requests.request(**request_kwargs)
+        resp = self.session.request(**request_kwargs)
         resp.raise_for_status()
         tree = ElementTree.fromstring(resp.content)
         return tree
