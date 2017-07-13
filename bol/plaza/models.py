@@ -209,3 +209,20 @@ class ProcessStatus(Model):
 
     class Meta:
         pass
+
+class Labels(Model):
+
+    class Meta:
+        TransporterCode = TextField()
+        LabelType = TextField()
+        MaxWeight = TextField()
+        MaxDimensions = TextField()
+        RetailPrice = DecimalField()
+        PurchasePrice = DecimalField()
+        Discount = DecimalField()
+        ShippingLabelCode = TextField()
+
+class PurchasableShippingLabels(ModelList):
+
+    class Meta:
+        item_type = Labels

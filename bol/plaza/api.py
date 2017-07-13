@@ -9,7 +9,7 @@ from enum import Enum
 
 from xml.etree import ElementTree
 
-from .models import Orders, Payments, Shipments, ProcessStatus
+from .models import Orders, Payments, Shipments, ProcessStatus, PurchasableShippingLabels
 
 
 __all__ = ['PlazaAPI']
@@ -170,6 +170,17 @@ class ShipmentMethods(MethodGroup):
         response = self.request('POST', data=xml)
         return ProcessStatus.parse(self.api, response)
 
+class LabelMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(LabelMethods, self).__init__(api, 'purchasable-shipping-labels')
+
+    def list(self, orderItemId):
+
+        params = {'orderItemId':orderItemId}
+        xml = self.request('GET', params=params)
+        return PurchasableShippingLabels.parse(self.api, xml)
+
 
 class TransportMethods(MethodGroup):
 
@@ -201,6 +212,7 @@ class PlazaAPI(object):
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)
         self.session = session or requests.Session()
+        self.labels = LabelMethods(self)
 
     def request(self, method, uri, params={}, data=None):
         content_type = 'application/xml; charset=UTF-8'
