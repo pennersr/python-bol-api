@@ -170,17 +170,6 @@ class ShipmentMethods(MethodGroup):
         response = self.request('POST', data=xml)
         return ProcessStatus.parse(self.api, response)
 
-class LabelMethods(MethodGroup):
-
-    def __init__(self, api):
-        super(LabelMethods, self).__init__(api, 'purchasable-shipping-labels')
-
-    def list(self, orderItemId):
-
-        params = {'orderItemId':orderItemId}
-        xml = self.request('GET', params=params)
-        return PurchasableShippingLabels.parse(self.api, xml)
-
 
 class TransportMethods(MethodGroup):
 
@@ -197,13 +186,42 @@ class TransportMethods(MethodGroup):
         return ProcessStatus.parse(self.api, response)
 
 
+
+class PurchasableShippingLabelsMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(PurchasableShippingLabelsMethods, self).__init__(api, 'purchasable-shipping-labels')
+
+    def list(self):
+        xml = self.request('GET')
+        return PurchasableShippingLabels.parse(self.api, xml)
+
+    def get(self, id):
+        params = {'orderItemId':id}
+        xml = self.request('GET', params=params)#'?orderItemId={}'.format(id))
+        return ProcessStatus.parse(self.api, xml)
+
+    def getSingle(self, transportId, shippingLabelId):
+        # params = {'orderItemId':id}
+        # xml = self.request('GET', params=params)#'?orderItemId={}'.format(id))
+
+        # calling a method
+        # shipping_label = api.PurchasableShippingLabels.getSingle(106603145,'PLR00000015')
+        # print "shipping_label => ",shipping_label
+        # PlazaAPI => request()-> uri /services/rest/purchasable-shipping-labels/v2/106603145/shipping-label/PLR00000015
+        xml = self.request('GET', '/{}/shipping-label/{}'.format(transportId, shippingLabelId))
+        return ProcessStatus.parse(self.api, xml)
+
+
 class PlazaAPI(object):
 
     def __init__(self, public_key, private_key, test=False, timeout=None,
                  session=None):
+
         self.public_key = public_key
         self.private_key = private_key
         self.url = 'https://%splazaapi.bol.com' % ('test-' if test else '')
+
         self.version = 'v2'
         self.timeout = timeout
         self.orders = OrderMethods(self)
@@ -211,8 +229,8 @@ class PlazaAPI(object):
         self.shipments = ShipmentMethods(self)
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)
+        self.PurchasableShippingLabels = PurchasableShippingLabelsMethods(self)
         self.session = session or requests.Session()
-        self.labels = LabelMethods(self)
 
     def request(self, method, uri, params={}, data=None):
         content_type = 'application/xml; charset=UTF-8'
