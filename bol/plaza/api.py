@@ -229,7 +229,7 @@ class PlazaAPI(object):
         self.shipments = ShipmentMethods(self)
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)
-        self.PurchasableShippingLabels = PurchasableShippingLabelsMethods(self)
+        self.labels = PurchasableShippingLabelsMethods(self)
         self.session = session or requests.Session()
 
     def request(self, method, uri, params={}, data=None):
