@@ -192,10 +192,6 @@ class PurchasableShippingLabelsMethods(MethodGroup):
     def __init__(self, api):
         super(PurchasableShippingLabelsMethods, self).__init__(api, 'purchasable-shipping-labels')
 
-    def list(self):
-        xml = self.request('GET')
-        return PurchasableShippingLabels.parse(self.api, xml)
-
     def get(self, id):
         params = {'orderItemId':id}
         xml = self.request('GET', params=params)#'?orderItemId={}'.format(id))
