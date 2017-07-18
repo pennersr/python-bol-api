@@ -153,20 +153,31 @@ class ShipmentMethods(MethodGroup):
 
     def create(self, order_item_id, date_time, expected_delivery_date,
                shipment_reference=None, transporter_code=None,
-               track_and_trace=None):
+               track_and_trace=None,shipping_label_code=None):
+        #moved the params to a dict so it can be easy to add/remove parameters
+        values = {
+            'OrderItemId':order_item_id,
+            'DateTime':date_time,
+            'ShipmentReference':shipment_reference,
+            'ExpectedDeliveryDate':expected_delivery_date,
+        }
+
         if transporter_code:
             transporter_code = TransporterCode.to_string(
                 transporter_code)
-        xml = self.create_request_xml(
-            'ShipmentRequest',
-            OrderItemId=order_item_id,
-            DateTime=date_time,
-            ShipmentReference=shipment_reference,
-            ExpectedDeliveryDate=expected_delivery_date,
-            Transport={
+
+        if shipping_label_code:
+            values['ShippingLabelCode'] = shipping_label_code
+        else:
+            values['Transport'] = {
                 'TransporterCode': transporter_code,
                 'TrackAndTrace': track_and_trace
-            })
+            }
+
+        xml = self.create_request_xml(
+            'ShipmentRequest',
+           **values)
+
         response = self.request('POST', data=xml)
         return ProcessStatus.parse(self.api, response)
 
