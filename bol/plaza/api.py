@@ -9,7 +9,7 @@ from enum import Enum
 
 from xml.etree import ElementTree
 
-from .models import Orders, Payments, Shipments, ProcessStatus, PurchasableShippingLabels
+from .models import Orders, Payments, Shipments, ProcessStatus, PurchasableShippingLabels, ReturnItems
 
 
 __all__ = ['PlazaAPI']
@@ -60,6 +60,8 @@ class TransporterCode(Enum):
 class MethodGroup(object):
 
     def __init__(self, api, group):
+        # print "\n MethodGroup=> __init__()-> api -> ",api
+        print "\n MethodGroup=> __init__()-> group -> ",group
         self.api = api
         self.group = group
 
@@ -68,6 +70,7 @@ class MethodGroup(object):
             group=self.group,
             version=self.api.version,
             path=path)
+        
         xml = self.api.request(method, uri, params=params, data=data, accept=accept)
         return xml
 
@@ -213,6 +216,18 @@ class PurchasableShippingLabelsMethods(MethodGroup):
         xml = self.request('GET', params=params)#'?orderItemId={}'.format(id))
         return PurchasableShippingLabels.parse(self.api, xml)
 
+class ReturnItemsMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(ReturnItemsMethods, self).__init__(api, 'return-items')
+
+    def getUnhandled(self):
+        xml=self.request('GET', path="/unhandled")
+        print "\n ReturnItemsMethods=> getUnhandled-> dir(ReturnItemsMethods)-> ", dir(ReturnItemsMethods)
+        return ReturnItemsMethods.parse(self.api,xml)
+
+
+
 
 class PlazaAPI(object):
 
@@ -232,6 +247,7 @@ class PlazaAPI(object):
         self.transports = TransportMethods(self)
         self.labels = PurchasableShippingLabelsMethods(self)
         self.session = session or requests.Session()
+        self.return_items = ReturnItemsMethods(self)
 
     def request(self, method, uri, params={}, data=None, accept="application/xml"):
         content_type = 'application/xml; charset=UTF-8'

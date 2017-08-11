@@ -59,6 +59,9 @@ class Model(object):
 
     @classmethod
     def parse(cls, api, xml):
+        print "\n Model=> parse()-> cls",cls
+        print " Model=> parse()-> api",api
+        print " Model=> parse()-> xml",xml
         m = cls()
         m.xml = xml
         for element in xml.getchildren():
@@ -226,3 +229,41 @@ class PurchasableShippingLabels(ModelList):
 
     class Meta:
         item_type = Labels
+
+
+
+class RI_CustomerDetails(Model):
+
+    class Meta:
+        SalutationCode = IntegerField()
+        FirstName = TextField()
+        Surname = TextField()
+        Streetname = TextField()
+        Housenumber = IntegerField()
+        HousenumberExtended = TextField()
+        ZipCode = TextField()
+        City = TextField()
+        CountryCode = TextField()
+        Email = TextField()
+        DeliveryPhoneNumber = IntegerField()
+        Company = TextField()
+
+
+class Item(Model):
+
+    class Meta:
+        ReturnNumber = IntegerField()
+        OrderId = IntegerField()
+        ShipmentId = IntegerField()
+        EAN = TextField()
+        Title = TextField()
+        Quantity = TextField()
+        ReturnDateAnnouncement = TextField()
+        ReturnReason = TextField()
+        customer_details = RI_CustomerDetails
+
+
+class ReturnItems(ModelList):
+
+    class Meta:
+        items = Item
