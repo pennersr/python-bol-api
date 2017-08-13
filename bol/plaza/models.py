@@ -266,4 +266,4 @@ class Item(Model):
 class ReturnItems(ModelList):
 
     class Meta:
-        items = Item
+        item_type = Item

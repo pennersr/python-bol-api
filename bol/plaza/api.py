@@ -222,10 +222,8 @@ class ReturnItemsMethods(MethodGroup):
         super(ReturnItemsMethods, self).__init__(api, 'return-items')
 
     def getUnhandled(self):
-        xml=self.request('GET', path="/unhandled")
-        print "\n ReturnItemsMethods=> getUnhandled-> dir(ReturnItemsMethods)-> ", dir(ReturnItemsMethods)
-        return ReturnItemsMethods.parse(self.api,xml)
-
+        xml=self.request('GET', path="/unhandled", accept="application/xml")
+        return ReturnItems.parse(self.api, xml)
 
 
 
@@ -253,7 +251,6 @@ class PlazaAPI(object):
         content_type = 'application/xml; charset=UTF-8'
         date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
         msg = """{method}
-
 {content_type}
 {date}
 x-bol-date:{date}
