@@ -70,7 +70,7 @@ class MethodGroup(object):
             group=self.group,
             version=self.api.version,
             path=path)
-        
+
         xml = self.api.request(method, uri, params=params, data=data, accept=accept)
         return xml
 
