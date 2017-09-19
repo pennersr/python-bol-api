@@ -59,6 +59,9 @@ class Model(object):
 
     @classmethod
     def parse(cls, api, xml):
+        print "\n Model=> parse()-> cls",cls
+        print " Model=> parse()-> api",api
+        print " Model=> parse()-> xml",xml
         m = cls()
         m.xml = xml
         for element in xml.getchildren():
@@ -228,6 +231,7 @@ class PurchasableShippingLabels(ModelList):
         item_type = Labels
 
 
+
 class RI_CustomerDetails(Model):
 
     class Meta:
@@ -263,89 +267,3 @@ class ReturnItems(ModelList):
 
     class Meta:
         item_type = Item
-
-class ProcessStatusLinks(Model):
-
-    class Meta:
-        link = IntegerField()
-
-class ProcessStatus(Model):
-
-    class Meta:
-        id = IntegerField()
-        sellerId = IntegerField()
-        entityId = IntegerField()
-        eventType = TextField()
-        status = TextField()
-        createTimestamp = TextField()
-        ReturnDateAnnouncement = TextField()
-        ReturnReason = TextField()
-        Links = ProcessStatusLinks()
-
-
-
-
-# models used for 'get single offer' method  :: RetailerOfferStatus, RetailerOffer, RetailerOffers, OffersResponse
-
-class RetailerOfferStatus(Model):
-
-    class Meta:
-        Published = BooleanField()
-        ErrorCode = TextField()
-        ErrorMessage = TextField()
-
-
-class RetailerOffer(Model):
-
-    class Meta:
-        EAN = TextField()
-        Condition = TextField()
-        Price = DecimalField()
-        DeliveryCode = TextField()
-        QuantityInStock = DecimalField()
-        UnreservedStock = DecimalField()
-        Publish = BooleanField()
-        ReferenceCode = TextField()
-        Description = TextField()
-        Title = TextField()
-        FulfillmentMethod = TextField()
-        Status = RetailerOfferStatus()
-
-
-class RetailerOffers(Model):
-
-    class Meta:
-        item_type = RetailerOffer()
-
-
-class OffersResponse(ModelList):
-
-    class Meta:
-        item_type = RetailerOffers()
-
-
-# models used for 'OffersExport' method  :: OfferFileUrl, OfferFile
-class OfferFileUrl(Model):
-
-    class Meta:
-        Url = TextField()
-
-
-class OfferFile(Model):
-
-    class Meta:
-        item_type = OfferFileUrl()
-
-
-# models used for 'Delete' method  :: DeleteBulkRequest, RetailerOfferIdentifier
-class RetailerOfferIdentifier(Model):
-
-    class Meta:
-        EAN = TextField()
-        Condition = TextField()
-
-
-class DeleteBulkRequest(ModelList):
-
-    class Meta:
-        item_type = RetailerOfferIdentifier()
