@@ -59,9 +59,9 @@ class Model(object):
 
     @classmethod
     def parse(cls, api, xml):
-        print "\n Model=> parse()-> cls",cls
-        print " Model=> parse()-> api",api
-        print " Model=> parse()-> xml",xml
+        # print "\n Model=> parse()-> cls",cls
+        # print " Model=> parse()-> api",api
+        # print " Model=> parse()-> xml",xml
         m = cls()
         m.xml = xml
         for element in xml.getchildren():

@@ -61,7 +61,7 @@ class MethodGroup(object):
 
     def __init__(self, api, group):
         # print "\n MethodGroup=> __init__()-> api -> ",api
-        print "\n MethodGroup=> __init__()-> group -> ",group
+        # print "\n MethodGroup=> __init__()-> group -> ",group
         self.api = api
         self.group = group
 
@@ -251,6 +251,7 @@ class PlazaAPI(object):
         content_type = 'application/xml; charset=UTF-8'
         date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
         msg = """{method}
+
 {content_type}
 {date}
 x-bol-date:{date}
