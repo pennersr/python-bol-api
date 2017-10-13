@@ -17,7 +17,7 @@ setup(name='python-bol-api-latest',
       version=VERSION,
       description="Wrapper for the bol.com API",
       classifiers=[
-          'Development Status :: 8 - Beta',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
           'Intended Audience :: System Administrators',
           'Operating System :: OS Independent',

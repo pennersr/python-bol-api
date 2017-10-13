@@ -5,8 +5,8 @@ python-bol-api
 .. image:: https://travis-ci.org/dreambits/python-bol-api.svg?branch=master
     :target: https://travis-ci.org/dreambits/python-bol-api
 
-.. image:: https://img.shields.io/pypi/v/python-bol-api.svg
-   :target: https://pypi.python.org/pypi/python-bol-api
+.. image:: https://badge.fury.io/py/python-bol-api-latest.svg
+    :target: https://badge.fury.io/py/python-bol-api-latest
 
 
 A Python wrapper for the bol.com API forked from https://github.com/pennersr/python-bol-api
