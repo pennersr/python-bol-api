@@ -205,11 +205,6 @@ class Shipments(ModelList):
         item_type = Shipment
 
 
-class ProcessStatus(Model):
-
-    class Meta:
-        pass
-
 class Labels(Model):
 
     class Meta:
@@ -221,6 +216,7 @@ class Labels(Model):
         PurchasePrice = DecimalField()
         Discount = DecimalField()
         ShippingLabelCode = TextField()
+
 
 class PurchasableShippingLabels(ModelList):
 
@@ -264,10 +260,12 @@ class ReturnItems(ModelList):
     class Meta:
         item_type = Item
 
+
 class ProcessStatusLinks(Model):
 
     class Meta:
         link = IntegerField()
+
 
 class ProcessStatus(Model):
 
@@ -282,10 +280,9 @@ class ProcessStatus(Model):
         ReturnReason = TextField()
         Links = ProcessStatusLinks()
 
+# models used for 'get single offer' method  ::
+# RetailerOfferStatus, RetailerOffer, RetailerOffers, OffersResponse
 
-
-
-# models used for 'get single offer' method  :: RetailerOfferStatus, RetailerOffer, RetailerOffers, OffersResponse
 
 class RetailerOfferStatus(Model):
 
@@ -337,7 +334,8 @@ class OfferFile(Model):
         item_type = OfferFileUrl()
 
 
-# models used for 'Delete' method  :: DeleteBulkRequest, RetailerOfferIdentifier
+# models used for 'Delete' method  ::
+# DeleteBulkRequest, RetailerOfferIdentifier
 class RetailerOfferIdentifier(Model):
 
     class Meta:

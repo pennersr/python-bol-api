@@ -11,9 +11,9 @@ from xml.etree import ElementTree
 
 from .models import Orders, Payments, Shipments, ProcessStatus
 
-#custom Method Models For DreamBits
-from .models import PurchasableShippingLabels, ReturnItems, ProcessStatus#, UpsertOffersError
-from .models import OffersResponse, OfferFile, DeleteBulkRequest
+# custom Method Models For DreamBits
+from .models import PurchasableShippingLabels, ReturnItems
+from .models import OffersResponse, OfferFile  # DeleteBulkRequest
 
 
 __all__ = ['PlazaAPI']
@@ -67,12 +67,14 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, path='', params={}, data=None, accept="application/xml"):
+    def request(self, method, path='', params={}, data=None,
+                accept="application/xml"):
         uri = '/services/rest/{group}/{version}{path}'.format(
             group=self.group,
             version=self.api.version,
             path=path)
-        xml = self.api.request(method, uri, params=params, data=data, accept=accept)
+        xml = self.api.request(method, uri, params=params, data=data,
+                               accept=accept)
         return xml
 
     def create_request_xml(self, root, **kwargs):
@@ -185,13 +187,13 @@ class ShipmentMethods(MethodGroup):
 
     def create(self, order_item_id, date_time, expected_delivery_date,
                shipment_reference=None, transporter_code=None,
-               track_and_trace=None,shipping_label_code=None):
-        #moved the params to a dict so it can be easy to add/remove parameters
+               track_and_trace=None, shipping_label_code=None):
+        # Moved the params to a dict so it can be easy to add/remove parameters
         values = {
-            'OrderItemId':order_item_id,
-            'DateTime':date_time,
-            'ShipmentReference':shipment_reference,
-            'ExpectedDeliveryDate':expected_delivery_date,
+            'OrderItemId': order_item_id,
+            'DateTime': date_time,
+            'ShipmentReference': shipment_reference,
+            'ExpectedDeliveryDate': expected_delivery_date,
         }
 
         if transporter_code:
@@ -208,7 +210,7 @@ class ShipmentMethods(MethodGroup):
 
         xml = self.create_request_xml(
             'ShipmentRequest',
-           **values)
+            **values)
 
         response = self.request('POST', data=xml)
         return ProcessStatus.parse(self.api, response)
@@ -229,8 +231,11 @@ class TransportMethods(MethodGroup):
         return ProcessStatus.parse(self.api, response)
 
     def getSingle(self, transportId, shippingLabelId, file_location):
-        content = self.request('GET', '/{}/shipping-label/{}'.format(transportId, shippingLabelId), params={}, data=None, accept="application/pdf")
-        #now lets store this content in pdf:
+        content = self.request('GET', '/{}/shipping-label/{}'.format(
+            transportId,
+            shippingLabelId),
+            params={}, data=None, accept="application/pdf")
+        # Now lets store this content in pdf:
 
         with open(file_location, 'wb') as f:
                 f.write(content)
@@ -239,11 +244,13 @@ class TransportMethods(MethodGroup):
 class PurchasableShippingLabelsMethods(MethodGroup):
 
     def __init__(self, api):
-        super(PurchasableShippingLabelsMethods, self).__init__(api, 'purchasable-shipping-labels')
+        super(PurchasableShippingLabelsMethods, self).__init__(
+            api,
+            'purchasable-shipping-labels')
 
     def get(self, id):
-        params = {'orderItemId':id}
-        xml = self.request('GET', params=params)#'?orderItemId={}'.format(id))
+        params = {'orderItemId': id}
+        xml = self.request('GET', params=params)
         return PurchasableShippingLabels.parse(self.api, xml)
 
 
@@ -253,11 +260,14 @@ class ReturnItemsMethods(MethodGroup):
         super(ReturnItemsMethods, self).__init__(api, 'return-items')
 
     def getUnhandled(self):
-        xml=self.request('GET', path="/unhandled", accept="application/xml")
+        xml = self.request('GET', path="/unhandled", accept="application/xml")
         return ReturnItems.parse(self.api, xml)
 
-    def getHandle(self, orderId,status_reason, qty_return):
-        xml = self.request('PUT', '/{}/handle'.format(orderId), params={'StatusReason':status_reason,'QuantityReturned':qty_return})
+    def getHandle(self, orderId, status_reason, qty_return):
+        xml = self.request('PUT', '/{}/handle'.format(orderId), params={
+            'StatusReason': status_reason,
+            'QuantityReturned': qty_return
+        })
         return ProcessStatus.parse(self.api, xml)
 
 
@@ -266,7 +276,8 @@ class OffersMethods(MethodGroup):
     def __init__(self, api):
         super(OffersMethods, self).__init__(api, 'offers')
 
-    def upsertOffers(self, offers, path='/', params={}, data=None, accept="application/xml"):
+    def upsertOffers(self, offers, path='/', params={},
+                     data=None, accept="application/xml"):
         xml = self.create_request_offers_xml(
             'UpsertRequest',
             RetailerOffer=offers)
@@ -274,43 +285,49 @@ class OffersMethods(MethodGroup):
             group=self.group,
             version=self.api.version,
             path=path)
-        response = self.api.request('PUT', uri, params=params, data=xml, accept=accept)
+        response = self.api.request('PUT', uri, params=params,
+                                    data=xml, accept=accept)
         # return ProcessStatus.parse(self.api, xml)
         if response is True:
             return response
         # else:
         #     return UpsertOffersError.parse(self.api, response)
 
-    def getSingleOffer(self, ean, path='/', params={}, data=None, accept="application/xml"):
+    def getSingleOffer(self, ean, path='/', params={},
+                       data=None, accept="application/xml"):
 
         uri = '/{group}/{version}{path}'.format(
             group=self.group,
             version=self.api.version,
             path='/{}'.format(ean))
-        response = self.api.request('GET', uri, params=params, data=data, accept=accept)
+        response = self.api.request('GET', uri, params=params,
+                                    data=data, accept=accept)
         return OffersResponse.parse(self.api, response)
 
-
-    def getOffersFileName(self, path='/', params={}, data=None, accept="application/xml"):
+    def getOffersFileName(self, path='/', params={},
+                          data=None, accept="application/xml"):
 
         uri = '/{group}/{version}{path}'.format(
             group=self.group,
             version=self.api.version,
             path='/export/')
-        response = self.api.request('GET', uri, params=params, data=data, accept=accept)
+        response = self.api.request('GET', uri, params=params,
+                                    data=data, accept=accept)
         return OfferFile.parse(self.api, response)
 
-    def getOffersFile(self, csv, path='/', params={}, data=None, accept="text/csv"):
+    def getOffersFile(self, csv, path='/', params={},
+                      data=None, accept="text/csv"):
         csv_path = csv.split("/v2/")
         uri = '/{group}/{version}{path}'.format(
             group=self.group,
             version=self.api.version,
             path='/{}'.format(csv_path[1]))
-        response = self.api.request('GET', uri, params=params, data=data, accept=accept)
+        response = self.api.request('GET', uri, params=params,
+                                    data=data, accept=accept)
         return response
 
-
-    def deleteOffers(self, offers, path='/', params={}, data=None, accept="application/xml"):
+    def deleteOffers(self, offers, path='/', params={},
+                     data=None, accept="application/xml"):
         xml = self.create_request_offers_xml(
             'DeleteBulkRequest',
             RetailerOfferIdentifier=offers)
@@ -319,7 +336,8 @@ class OffersMethods(MethodGroup):
             group=self.group,
             version=self.api.version,
             path=path)
-        response = self.api.request('PUT', uri, params=params, data=xml, accept=accept)
+        response = self.api.request('PUT', uri, params=params,
+                                    data=xml, accept=accept)
         if response is True:
             return response
 
@@ -345,7 +363,8 @@ class PlazaAPI(object):
         self.return_items = ReturnItemsMethods(self)
         self.offers = OffersMethods(self)
 
-    def request(self, method, uri, params={}, data=None, accept="application/xml"):
+    def request(self, method, uri, params={},
+                data=None, accept="application/xml"):
         content_type = 'application/xml; charset=UTF-8'
         date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
         msg = """{method}
@@ -367,7 +386,7 @@ x-bol-date:{date}
         headers = {'Content-Type': content_type,
                    'X-BOL-Date': date,
                    'X-BOL-Authorization': signature,
-                   'accept':accept}
+                   'accept': accept}
 
         request_kwargs = {
             'method': method,
@@ -388,7 +407,8 @@ x-bol-date:{date}
                 tree = ElementTree.fromstring(resp.content)
                 return tree
 
-        if 'https://plazaapi.bol.com/offers/v2/export/' in request_kwargs['url']:
+        if 'https://plazaapi.bol.com/offers/v2/export/' in request_kwargs[
+                'url']:
             if accept == "text/csv":
                 return resp.text
 
