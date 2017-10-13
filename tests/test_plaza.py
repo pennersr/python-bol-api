@@ -312,7 +312,7 @@ def test_order_process():
             shipment_reference='abc',
             transporter_code=TransporterCode.GLS,
             track_and_trace='3S123')
-        assert process_status.sellerId == '12345678'
+        assert process_status.sellerId == 12345678
 
 
 def test_payments():
@@ -364,4 +364,4 @@ def test_update_transport():
             1,
             track_and_trace='3S123',
             transporter_code=TransporterCode.GLS)
-        assert process_status.sellerId == '925853'
+        assert process_status.sellerId == 925853
