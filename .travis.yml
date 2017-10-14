@@ -9,6 +9,5 @@ install:
  - pip install codecov
 script:
  - tox
- - coverage run
 after_success:
  - codecov -t b23f9815-6e51-449b-92c2-11521da6d24a
