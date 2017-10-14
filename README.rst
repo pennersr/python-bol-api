@@ -8,6 +8,8 @@ python-bol-api
 .. image:: https://badge.fury.io/py/python-bol-api-latest.svg
     :target: https://badge.fury.io/py/python-bol-api-latest
 
+.. image:: https://codecov.io/gh/dreambits/python-bol-api/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/dreambits/python-bol-api
 
 A Python wrapper for the bol.com API forked from https://github.com/pennersr/python-bol-api
 This is currently under development but stable to be used.
