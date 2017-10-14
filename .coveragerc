@@ -1,6 +1,6 @@
 [run]
 
-source = */bol/*
+source = bol
 
 [report]
 include =
