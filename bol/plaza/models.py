@@ -278,7 +278,7 @@ class ProcessStatus(Model):
         createTimestamp = TextField()
         ReturnDateAnnouncement = TextField()
         ReturnReason = TextField()
-        Links = ProcessStatusLinks()
+        item_type = ProcessStatusLinks()
 
 # models used for 'get single offer' method  ::
 # RetailerOfferStatus, RetailerOffer, RetailerOffers, OffersResponse
