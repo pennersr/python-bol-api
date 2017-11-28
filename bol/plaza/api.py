@@ -7,6 +7,10 @@ from datetime import datetime
 import collections
 from enum import Enum
 
+import traceback
+
+
+
 from xml.etree import ElementTree
 
 from .models import Orders, Payments, Shipments, ProcessStatus
@@ -328,18 +332,23 @@ class OffersMethods(MethodGroup):
 
     def deleteOffers(self, offers, path='/', params={},
                      data=None, accept="application/xml"):
-        xml = self.create_request_offers_xml(
-            'DeleteBulkRequest',
-            RetailerOfferIdentifier=offers)
+        try:
+            xml = self.create_request_offers_xml(
+                'DeleteBulkRequest',
+                RetailerOfferIdentifier=offers[0])
+            print "\n\n xml is %s" % xml
+            uri = '/{group}/{version}{path}'.format(
+                group=self.group,
+                version=self.api.version,
+                path=path)
+            response = self.api.request("DELETE", uri, params=params,
+                                        data=xml, accept=accept)
+            print "response is %s" % response
+            if response is True:
+                return response
+        except Exception:
+            print "Got into Exception \n%s" % traceback.print_exc()
 
-        uri = '/{group}/{version}{path}'.format(
-            group=self.group,
-            version=self.api.version,
-            path=path)
-        response = self.api.request('PUT', uri, params=params,
-                                    data=xml, accept=accept)
-        if response is True:
-            return response
 
 
 class PlazaAPI(object):
@@ -365,57 +374,64 @@ class PlazaAPI(object):
 
     def request(self, method, uri, params={},
                 data=None, accept="application/xml"):
-        content_type = 'application/xml; charset=UTF-8'
-        date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
-        msg = """{method}
+        try:
+            content_type = 'application/xml; charset=UTF-8'
+            date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
+            msg = """{method}
 
 {content_type}
 {date}
 x-bol-date:{date}
 {uri}""".format(content_type=content_type,
-                date=date,
-                method=method,
-                uri=uri)
-        h = hmac.new(
-            self.private_key.encode('utf-8'),
-            msg.encode('utf-8'), hashlib.sha256)
-        b64 = base64.b64encode(h.digest())
+                    date=date,
+                    method=method,
+                    uri=uri)
+            h = hmac.new(
+                self.private_key.encode('utf-8'),
+                msg.encode('utf-8'), hashlib.sha256)
+            b64 = base64.b64encode(h.digest())
 
-        signature = self.public_key.encode('utf-8') + b':' + b64
+            signature = self.public_key.encode('utf-8') + b':' + b64
 
-        headers = {'Content-Type': content_type,
-                   'X-BOL-Date': date,
-                   'X-BOL-Authorization': signature,
-                   'accept': accept}
+            headers = {'Content-Type': content_type,
+                       'X-BOL-Date': date,
+                       'X-BOL-Authorization': signature,
+                       'accept': accept}
+            print "__main__.headers is %s" % headers
 
-        request_kwargs = {
-            'method': method,
-            'url': self.url + uri,
-            'params': params,
-            'headers': headers,
-            'timeout': self.timeout,
-        }
-        if data:
-            request_kwargs['data'] = data
+            request_kwargs = {
+                'method': method,
+                'url': self.url + uri,
+                'params': params,
+                'headers': headers,
+                'timeout': self.timeout,
+            }
+            if data:
+                request_kwargs['data'] = data
 
-        resp = self.session.request(**request_kwargs)
+            resp = self.session.request(**request_kwargs)
 
-        if request_kwargs['url'] == 'https://plazaapi.bol.com/offers/v2/':
-            if resp.status_code == 202 and resp.text is not None:
-                return True
+            print "__main__.resp is %s" % resp
+            print "__main__.resp.content is %s" % resp.content
+            if request_kwargs['url'] == 'https://plazaapi.bol.com/offers/v2/':
+                if resp.status_code == 202 and resp.text is not None:
+                    return True
+                else:
+                    tree = ElementTree.fromstring(resp.content)
+                    return tree
+
+            if 'https://plazaapi.bol.com/offers/v2/export/' in request_kwargs[
+                    'url']:
+                if accept == "text/csv":
+                    return resp.text
+
+            resp.raise_for_status()
+
+            if accept == "application/pdf":
+                return resp.content
             else:
                 tree = ElementTree.fromstring(resp.content)
                 return tree
-
-        if 'https://plazaapi.bol.com/offers/v2/export/' in request_kwargs[
-                'url']:
-            if accept == "text/csv":
-                return resp.text
-
-        resp.raise_for_status()
-
-        if accept == "application/pdf":
-            return resp.content
-        else:
-            tree = ElementTree.fromstring(resp.content)
-            return tree
+        except Exception:
+            print "Got into Exception \n%s" % traceback.print_exc()
+            return False
