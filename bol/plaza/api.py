@@ -336,14 +336,12 @@ class OffersMethods(MethodGroup):
             xml = self.create_request_offers_xml(
                 'DeleteBulkRequest',
                 RetailerOfferIdentifier=offers[0])
-            print "\n\n xml is %s" % xml
             uri = '/{group}/{version}{path}'.format(
                 group=self.group,
                 version=self.api.version,
                 path=path)
             response = self.api.request("DELETE", uri, params=params,
                                         data=xml, accept=accept)
-            print "response is %s" % response
             if response is True:
                 return response
         except Exception:
@@ -397,7 +395,6 @@ x-bol-date:{date}
                        'X-BOL-Date': date,
                        'X-BOL-Authorization': signature,
                        'accept': accept}
-            print "__main__.headers is %s" % headers
 
             request_kwargs = {
                 'method': method,
@@ -411,8 +408,6 @@ x-bol-date:{date}
 
             resp = self.session.request(**request_kwargs)
 
-            print "__main__.resp is %s" % resp
-            print "__main__.resp.content is %s" % resp.content
             if request_kwargs['url'] == 'https://plazaapi.bol.com/offers/v2/':
                 if resp.status_code == 202 and resp.text is not None:
                     return True
