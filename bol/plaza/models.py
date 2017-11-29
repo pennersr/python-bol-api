@@ -205,7 +205,145 @@ class Shipments(ModelList):
         item_type = Shipment
 
 
+class Labels(Model):
+
+    class Meta:
+        TransporterCode = TextField()
+        LabelType = TextField()
+        MaxWeight = TextField()
+        MaxDimensions = TextField()
+        RetailPrice = DecimalField()
+        PurchasePrice = DecimalField()
+        Discount = DecimalField()
+        ShippingLabelCode = TextField()
+
+
+class PurchasableShippingLabels(ModelList):
+
+    class Meta:
+        item_type = Labels
+
+
+class RI_CustomerDetails(Model):
+
+    class Meta:
+        SalutationCode = IntegerField()
+        FirstName = TextField()
+        Surname = TextField()
+        Streetname = TextField()
+        Housenumber = IntegerField()
+        HousenumberExtended = TextField()
+        ZipCode = TextField()
+        City = TextField()
+        CountryCode = TextField()
+        Email = TextField()
+        DeliveryPhoneNumber = IntegerField()
+        Company = TextField()
+
+
+class Item(Model):
+
+    class Meta:
+        ReturnNumber = IntegerField()
+        OrderId = IntegerField()
+        ShipmentId = IntegerField()
+        EAN = TextField()
+        Title = TextField()
+        Quantity = TextField()
+        ReturnDateAnnouncement = TextField()
+        ReturnReason = TextField()
+        customer_details = RI_CustomerDetails
+
+
+class ReturnItems(ModelList):
+
+    class Meta:
+        item_type = Item
+
+
+class ProcessStatusLinks(Model):
+
+    class Meta:
+        link = IntegerField()
+
+
 class ProcessStatus(Model):
 
     class Meta:
-        pass
+        id = IntegerField()
+        sellerId = IntegerField()
+        entityId = IntegerField()
+        eventType = TextField()
+        status = TextField()
+        createTimestamp = TextField()
+        ReturnDateAnnouncement = TextField()
+        ReturnReason = TextField()
+        item_type = ProcessStatusLinks()
+
+# models used for 'get single offer' method  ::
+# RetailerOfferStatus, RetailerOffer, RetailerOffers, OffersResponse
+
+
+class RetailerOfferStatus(Model):
+
+    class Meta:
+        Published = BooleanField()
+        ErrorCode = TextField()
+        ErrorMessage = TextField()
+
+
+class RetailerOffer(Model):
+
+    class Meta:
+        EAN = TextField()
+        Condition = TextField()
+        Price = DecimalField()
+        DeliveryCode = TextField()
+        QuantityInStock = DecimalField()
+        UnreservedStock = DecimalField()
+        Publish = BooleanField()
+        ReferenceCode = TextField()
+        Description = TextField()
+        Title = TextField()
+        FulfillmentMethod = TextField()
+        item_type = RetailerOfferStatus()
+
+
+class RetailerOffers(ModelList):
+
+    class Meta:
+        item_type = RetailerOffer()
+
+
+class OffersResponse(ModelList):
+
+    class Meta:
+        item_type = RetailerOffers()
+
+
+# models used for 'OffersExport' method  :: OfferFileUrl, OfferFile
+class OfferFileUrl(Model):
+
+    class Meta:
+        Url = TextField()
+
+
+class OfferFile(Model):
+
+    class Meta:
+        item_type = OfferFileUrl()
+
+
+# models used for 'Delete' method  ::
+# DeleteBulkRequest, RetailerOfferIdentifier
+class RetailerOfferIdentifier(Model):
+
+    class Meta:
+        EAN = TextField()
+        Condition = TextField()
+
+
+class DeleteBulkRequest(ModelList):
+
+    class Meta:
+        item_type = RetailerOfferIdentifier()

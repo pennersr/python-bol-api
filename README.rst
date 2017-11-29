@@ -2,20 +2,20 @@
 python-bol-api
 ==============
 
-.. image:: https://badge.fury.io/py/python-bol-api.png
-   :target: http://badge.fury.io/py/python-bol-api
+.. image:: https://travis-ci.org/dreambits/python-bol-api.svg?branch=master
+    :target: https://travis-ci.org/dreambits/python-bol-api
 
-.. image:: https://travis-ci.org/pennersr/python-bol-api.png
-   :target: http://travis-ci.org/pennersr/python-bol-api
+.. image:: https://badge.fury.io/py/python-bol-api-latest.svg
+    :target: https://badge.fury.io/py/python-bol-api-latest
 
-.. image:: https://img.shields.io/pypi/v/python-bol-api.svg
-   :target: https://pypi.python.org/pypi/python-bol-api
+.. image:: https://codecov.io/gh/dreambits/python-bol-api/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/dreambits/python-bol-api
 
-.. image:: https://pennersr.github.io/img/bitcoin-badge.svg
-   :target: https://blockchain.info/address/1AJXuBMPHkaDCNX2rwAy34bGgs7hmrePEr
+A Python wrapper for the bol.com API forked from https://github.com/pennersr/python-bol-api
+This is currently under development but stable to be used.
+We are adding more and more features as the api has changed a lot from the time this version was created in original project
 
-A Python wrapper for the bol.com API. Currently rather incomplete, as
-it offers only those methods required for my own projects so far.
+Soon to be release in PyPi and GenFury
 
 
 Open API

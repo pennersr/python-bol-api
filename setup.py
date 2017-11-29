@@ -13,7 +13,7 @@ install_requires = [
 if IS_PY2:
     install_requires.append('enum34')
 
-setup(name='python-bol-api',
+setup(name='python-bol-api-latest',
       version=VERSION,
       description="Wrapper for the bol.com API",
       classifiers=[
@@ -32,9 +32,9 @@ setup(name='python-bol-api',
           'GNU Lesser General Public License v3 or later (LGPLv3+)',
       ],
       keywords='bol bol.com api wrapper',
-      author='Raymond Penners',
-      author_email='raymond.penners@intenct.nl',
-      url='http://www.intenct.info/',
+      author='Raymond Penners, Dreambits Technologies Pvt. Ltd.',
+      author_email='admin@dreambits.in',
+      url='https://dreambits.in',
       license='',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,

@@ -7,9 +7,17 @@ from datetime import datetime
 import collections
 from enum import Enum
 
+import traceback
+
+
+
 from xml.etree import ElementTree
 
 from .models import Orders, Payments, Shipments, ProcessStatus
+
+# custom Method Models For DreamBits
+from .models import PurchasableShippingLabels, ReturnItems
+from .models import OffersResponse, OfferFile  # DeleteBulkRequest
 
 
 __all__ = ['PlazaAPI']
@@ -63,18 +71,29 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, path='', params={}, data=None):
+    def request(self, method, path='', params={}, data=None,
+                accept="application/xml"):
         uri = '/services/rest/{group}/{version}{path}'.format(
             group=self.group,
             version=self.api.version,
             path=path)
-        xml = self.api.request(method, uri, params=params, data=data)
+        xml = self.api.request(method, uri, params=params, data=data,
+                               accept=accept)
         return xml
 
     def create_request_xml(self, root, **kwargs):
         elements = self._create_request_xml_elements(1, **kwargs)
         xml = """<?xml version="1.0" encoding="UTF-8"?>
 <{root} xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+{elements}
+</{root}>
+""".format(root=root, elements=elements)
+        return xml
+
+    def create_request_offers_xml(self, root, **kwargs):
+        elements = self._create_request_xml_elements(1, **kwargs)
+        xml = """<?xml version="1.0" encoding="UTF-8"?>
+<{root} xmlns="https://plazaapi.bol.com/offers/xsd/api-2.0.xsd">
 {elements}
 </{root}>
 """.format(root=root, elements=elements)
@@ -87,24 +106,43 @@ class MethodGroup(object):
         for tag, value in kwargs.items():
             if value is not None:
                 prefix = ' ' * 4 * indent
-                if isinstance(value, dict):
-                    text = '\n{}\n{}'.format(
-                        self._create_request_xml_elements(
-                            indent + 1, **value),
-                        prefix)
-                elif isinstance(value, datetime):
-                    text = value.isoformat()
+                if not isinstance(value, list):
+                    if isinstance(value, dict):
+                        text = '\n{}\n{}'.format(
+                            self._create_request_xml_elements(
+                                indent + 1, **value),
+                            prefix)
+                    elif isinstance(value, datetime):
+                        text = value.isoformat()
+                    else:
+                        text = str(value)
+                    # TODO: Escape! For now this will do I am only dealing
+                    # with track & trace codes and simplistic IDs...
+                    if xml:
+                        xml += '\n'
+                    xml += prefix
+                    xml += "<{tag}>{text}</{tag}>".format(
+                        tag=tag,
+                        text=text
+                    )
                 else:
-                    text = str(value)
-                # TODO: Escape! For now this will do I am only dealing
-                # with track & trace codes and simplistic IDs...
-                if xml:
-                    xml += '\n'
-                xml += prefix
-                xml += "<{tag}>{text}</{tag}>".format(
-                    tag=tag,
-                    text=text
-                )
+                    for item in value:
+                        if isinstance(item, dict):
+                            text = '\n{}\n{}'.format(
+                                self._create_request_xml_elements(
+                                    indent + 1, **item),
+                                prefix)
+                        else:
+                            text = str(item)
+                        # TODO: Escape! For now this will do I am only dealing
+                        # with track & trace codes and simplistic IDs...
+                        if xml:
+                            xml += '\n'
+                        xml += prefix
+                        xml += "<{tag}>{text}</{tag}>".format(
+                            tag=tag,
+                            text=text
+                        )
         return xml
 
 
@@ -153,20 +191,31 @@ class ShipmentMethods(MethodGroup):
 
     def create(self, order_item_id, date_time, expected_delivery_date,
                shipment_reference=None, transporter_code=None,
-               track_and_trace=None):
+               track_and_trace=None, shipping_label_code=None):
+        # Moved the params to a dict so it can be easy to add/remove parameters
+        values = {
+            'OrderItemId': order_item_id,
+            'DateTime': date_time,
+            'ShipmentReference': shipment_reference,
+            'ExpectedDeliveryDate': expected_delivery_date,
+        }
+
         if transporter_code:
             transporter_code = TransporterCode.to_string(
                 transporter_code)
-        xml = self.create_request_xml(
-            'ShipmentRequest',
-            OrderItemId=order_item_id,
-            DateTime=date_time,
-            ShipmentReference=shipment_reference,
-            ExpectedDeliveryDate=expected_delivery_date,
-            Transport={
+
+        if shipping_label_code:
+            values['ShippingLabelCode'] = shipping_label_code
+        else:
+            values['Transport'] = {
                 'TransporterCode': transporter_code,
                 'TrackAndTrace': track_and_trace
-            })
+            }
+
+        xml = self.create_request_xml(
+            'ShipmentRequest',
+            **values)
+
         response = self.request('POST', data=xml)
         return ProcessStatus.parse(self.api, response)
 
@@ -185,14 +234,130 @@ class TransportMethods(MethodGroup):
         response = self.request('PUT', '/{}'.format(id), data=xml)
         return ProcessStatus.parse(self.api, response)
 
+    def getSingle(self, transportId, shippingLabelId, file_location):
+        content = self.request('GET', '/{}/shipping-label/{}'.format(
+            transportId,
+            shippingLabelId),
+            params={}, data=None, accept="application/pdf")
+        # Now lets store this content in pdf:
+
+        with open(file_location, 'wb') as f:
+                f.write(content)
+
+
+class PurchasableShippingLabelsMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(PurchasableShippingLabelsMethods, self).__init__(
+            api,
+            'purchasable-shipping-labels')
+
+    def get(self, id):
+        params = {'orderItemId': id}
+        xml = self.request('GET', params=params)
+        return PurchasableShippingLabels.parse(self.api, xml)
+
+
+class ReturnItemsMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(ReturnItemsMethods, self).__init__(api, 'return-items')
+
+    def getUnhandled(self):
+        xml = self.request('GET', path="/unhandled", accept="application/xml")
+        return ReturnItems.parse(self.api, xml)
+
+    def getHandle(self, orderId, status_reason, qty_return):
+        xml = self.request('PUT', '/{}/handle'.format(orderId), params={
+            'StatusReason': status_reason,
+            'QuantityReturned': qty_return
+        })
+        return ProcessStatus.parse(self.api, xml)
+
+
+class OffersMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(OffersMethods, self).__init__(api, 'offers')
+
+    def upsertOffers(self, offers, path='/', params={},
+                     data=None, accept="application/xml"):
+        xml = self.create_request_offers_xml(
+            'UpsertRequest',
+            RetailerOffer=offers)
+        uri = '/{group}/{version}{path}'.format(
+            group=self.group,
+            version=self.api.version,
+            path=path)
+        response = self.api.request('PUT', uri, params=params,
+                                    data=xml, accept=accept)
+        # return ProcessStatus.parse(self.api, xml)
+        if response is True:
+            return response
+        # else:
+        #     return UpsertOffersError.parse(self.api, response)
+
+    def getSingleOffer(self, ean, path='/', params={},
+                       data=None, accept="application/xml"):
+
+        uri = '/{group}/{version}{path}'.format(
+            group=self.group,
+            version=self.api.version,
+            path='/{}'.format(ean))
+        response = self.api.request('GET', uri, params=params,
+                                    data=data, accept=accept)
+        return OffersResponse.parse(self.api, response)
+
+    def getOffersFileName(self, path='/', params={},
+                          data=None, accept="application/xml"):
+
+        uri = '/{group}/{version}{path}'.format(
+            group=self.group,
+            version=self.api.version,
+            path='/export/')
+        response = self.api.request('GET', uri, params=params,
+                                    data=data, accept=accept)
+        return OfferFile.parse(self.api, response)
+
+    def getOffersFile(self, csv, path='/', params={},
+                      data=None, accept="text/csv"):
+        csv_path = csv.split("/v2/")
+        uri = '/{group}/{version}{path}'.format(
+            group=self.group,
+            version=self.api.version,
+            path='/{}'.format(csv_path[1]))
+        response = self.api.request('GET', uri, params=params,
+                                    data=data, accept=accept)
+        return response
+
+    def deleteOffers(self, offers, path='/', params={},
+                     data=None, accept="application/xml"):
+        try:
+            xml = self.create_request_offers_xml(
+                'DeleteBulkRequest',
+                RetailerOfferIdentifier=offers[0])
+            uri = '/{group}/{version}{path}'.format(
+                group=self.group,
+                version=self.api.version,
+                path=path)
+            response = self.api.request("DELETE", uri, params=params,
+                                        data=xml, accept=accept)
+            if response is True:
+                return response
+        except Exception:
+            print "Got into Exception \n%s" % traceback.print_exc()
+
+
 
 class PlazaAPI(object):
 
     def __init__(self, public_key, private_key, test=False, timeout=None,
                  session=None):
+
         self.public_key = public_key
         self.private_key = private_key
         self.url = 'https://%splazaapi.bol.com' % ('test-' if test else '')
+
         self.version = 'v2'
         self.timeout = timeout
         self.orders = OrderMethods(self)
@@ -200,40 +365,68 @@ class PlazaAPI(object):
         self.shipments = ShipmentMethods(self)
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)
+        self.labels = PurchasableShippingLabelsMethods(self)
         self.session = session or requests.Session()
+        self.return_items = ReturnItemsMethods(self)
+        self.offers = OffersMethods(self)
 
-    def request(self, method, uri, params={}, data=None):
-        content_type = 'application/xml; charset=UTF-8'
-        date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
-        msg = """{method}
+    def request(self, method, uri, params={},
+                data=None, accept="application/xml"):
+        try:
+            content_type = 'application/xml; charset=UTF-8'
+            date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
+            msg = """{method}
 
 {content_type}
 {date}
 x-bol-date:{date}
 {uri}""".format(content_type=content_type,
-                date=date,
-                method=method,
-                uri=uri)
-        h = hmac.new(
-            self.private_key.encode('utf-8'),
-            msg.encode('utf-8'), hashlib.sha256)
-        b64 = base64.b64encode(h.digest())
+                    date=date,
+                    method=method,
+                    uri=uri)
+            h = hmac.new(
+                self.private_key.encode('utf-8'),
+                msg.encode('utf-8'), hashlib.sha256)
+            b64 = base64.b64encode(h.digest())
 
-        signature = self.public_key.encode('utf-8') + b':' + b64
+            signature = self.public_key.encode('utf-8') + b':' + b64
 
-        headers = {'Content-Type': content_type,
-                   'X-BOL-Date': date,
-                   'X-BOL-Authorization': signature}
-        request_kwargs = {
-            'method': method,
-            'url': self.url + uri,
-            'params': params,
-            'headers': headers,
-            'timeout': self.timeout,
-        }
-        if data:
-            request_kwargs['data'] = data
-        resp = self.session.request(**request_kwargs)
-        resp.raise_for_status()
-        tree = ElementTree.fromstring(resp.content)
-        return tree
+            headers = {'Content-Type': content_type,
+                       'X-BOL-Date': date,
+                       'X-BOL-Authorization': signature,
+                       'accept': accept}
+
+            request_kwargs = {
+                'method': method,
+                'url': self.url + uri,
+                'params': params,
+                'headers': headers,
+                'timeout': self.timeout,
+            }
+            if data:
+                request_kwargs['data'] = data
+
+            resp = self.session.request(**request_kwargs)
+
+            if request_kwargs['url'] == 'https://plazaapi.bol.com/offers/v2/':
+                if resp.status_code == 202 and resp.text is not None:
+                    return True
+                else:
+                    tree = ElementTree.fromstring(resp.content)
+                    return tree
+
+            if 'https://plazaapi.bol.com/offers/v2/export/' in request_kwargs[
+                    'url']:
+                if accept == "text/csv":
+                    return resp.text
+
+            resp.raise_for_status()
+
+            if accept == "application/pdf":
+                return resp.content
+            else:
+                tree = ElementTree.fromstring(resp.content)
+                return tree
+        except Exception:
+            print "Got into Exception \n%s" % traceback.print_exc()
+            return False
