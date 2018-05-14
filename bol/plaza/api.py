@@ -3,13 +3,15 @@ import requests
 import hmac
 import hashlib
 import base64
-from datetime import datetime
+from datetime import datetime, date
 import collections
 from enum import Enum
 
 from xml.etree import ElementTree
 
-from .models import Orders, Payments, Shipments, ProcessStatus
+from .models import (
+    Orders, Shipments, ProcessStatus, Invoices, Invoice,
+    InvoiceSpecifications)
 
 
 __all__ = ['PlazaAPI']
@@ -64,10 +66,12 @@ class MethodGroup(object):
         self.group = group
 
     def request(self, method, path='', params={}, data=None):
-        uri = '/services/rest/{group}/{version}{path}'.format(
-            group=self.group,
-            version=self.api.version,
-            path=path)
+        uri = path
+        if not uri.startswith('/services'):
+            uri = '/services/rest/{group}/{version}{path}'.format(
+                group=self.group,
+                version=self.api.version,
+                path=path)
         xml = self.api.request(method, uri, params=params, data=data)
         return xml
 
@@ -118,14 +122,41 @@ class OrderMethods(MethodGroup):
         return Orders.parse(self.api, xml)
 
 
-class PaymentMethods(MethodGroup):
+class InvoiceMethods(MethodGroup):
 
     def __init__(self, api):
-        super(PaymentMethods, self).__init__(api, 'payments')
+        super(InvoiceMethods, self).__init__(api, 'invoices')
 
-    def list(self, year, month):
-        xml = self.request('GET', '/%d%02d' % (year, month))
-        return Payments.parse(self.api, xml)
+    def list(self, order_id=None, period_from=None, period_to=None):
+        params = {}
+        if order_id:
+            params['orderId'] = order_id
+        if period_from or period_to:
+            if (not isinstance(period_from, date) or
+                    not isinstance(period_to, date)):
+                raise ValueError()
+            params['period'] = '/'.join([
+                period_from.isoformat(),
+                period_to.isoformat()
+            ])
+        xml = self.request('GET', '/services/rest/invoices', params=params)
+        return Invoices.parse(self.api, xml)
+
+    def get(self, invoice_id):
+        xml = self.request('GET', '/services/rest/invoices/{}'.format(
+            invoice_id))
+        return Invoice.parse(self.api, xml)
+
+    def get_specification(self, invoice_id, page=None):
+        params = {}
+        if page is not None:
+            params['page'] = page
+        xml = self.request(
+            'GET',
+            '/services/rest/invoices/{}/specification'.format(
+                invoice_id),
+            params=params)
+        return InvoiceSpecifications.parse(self.api, xml)
 
 
 class ProcessStatusMethods(MethodGroup):
@@ -196,7 +227,7 @@ class PlazaAPI(object):
         self.version = 'v2'
         self.timeout = timeout
         self.orders = OrderMethods(self)
-        self.payments = PaymentMethods(self)
+        self.invoices = InvoiceMethods(self)
         self.shipments = ShipmentMethods(self)
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)

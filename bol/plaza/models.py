@@ -62,7 +62,12 @@ class Model(object):
         m = cls()
         m.xml = xml
         for element in xml.getchildren():
-            tag = element.tag.partition('}')[2]
+            if '}' in element.tag:
+                tag = element.tag.partition('}')[2]
+            elif ':' in element.tag:
+                tag = element.tag.partition(':')[2]
+            else:
+                tag = element.tag
             field = getattr(m.Meta, tag, TextField())
             setattr(m, tag, field.parse(api, element, m))
         return m
@@ -74,7 +79,10 @@ class ModelList(list, Model):
     def parse(cls, api, xml):
         ml = cls()
         ml.xml = xml
+        item_tag = getattr(ml.Meta, 'item_type_tag', None)
         for element in xml.getchildren():
+            if item_tag and item_tag != element.tag:
+                continue
             ml.append(ml.Meta.item_type.parse(api, element))
         return ml
 
@@ -96,6 +104,51 @@ class CustomerDetails(Model):
     class Meta:
         ShipmentDetails = ModelField(ShipmentDetails)
         BillingDetails = ModelField(BillingDetails)
+
+
+class Invoice(Model):
+
+    class Meta:
+        pass
+
+
+class InvoiceListItem(Model):
+
+    class Meta:
+        pass
+
+
+class Invoices(ModelList):
+
+    class Meta:
+        item_type = InvoiceListItem
+        item_type_tag = 'InvoiceListItem'
+
+
+class Price(Model):
+
+    class Meta:
+        PriceAmount = DecimalField()
+        BaseQuantity = DecimalField()
+
+
+class InvoiceSpecificationItem(Model):
+
+    class Meta:
+        Price = ModelField(Price)
+
+
+class InvoiceSpecification(Model):
+
+    class Meta:
+        Item = ModelField(InvoiceSpecificationItem)
+        pass
+
+
+class InvoiceSpecifications(ModelList):
+
+    class Meta:
+        item_type = InvoiceSpecification
 
 
 class OrderItem(Model):
@@ -125,51 +178,6 @@ class Orders(ModelList):
 
     class Meta:
         item_type = Order
-
-
-class PaymentShipmentItem(Model):
-
-    class Meta:
-        Quantity = IntegerField()
-        OfferPrice = DecimalField()
-        TransactionFee = DecimalField()
-        TotalAmount = DecimalField()
-        ShippingContribution = DecimalField()
-
-
-class PaymentShipmentItems(ModelList):
-
-    class Meta:
-        item_type = PaymentShipmentItem
-
-
-class PaymentShipment(Model):
-
-    class Meta:
-
-        PaymentShipmentAmount = DecimalField()
-        ShipmentDate = DateTimeField()
-        PaymentShipmentItems = ModelField(PaymentShipmentItems)
-
-
-class PaymentShipments(ModelList):
-
-    class Meta:
-        item_type = PaymentShipment
-
-
-class Payment(Model):
-
-    class Meta:
-        PaymentShipments = ModelField(PaymentShipments)
-        DateTimePayment = DateTimeField()
-        PaymentAmount = DecimalField()
-
-
-class Payments(ModelList):
-
-    class Meta:
-        item_type = Payment
 
 
 class ShipmentItem(Model):

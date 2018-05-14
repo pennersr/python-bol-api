@@ -62,39 +62,6 @@ ORDERS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
 </bns:Orders>"""
 
 
-PAYMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
-<bns:Payments
-    xmlns:bns="http://plazaapi.bol.com/services/xsd/plazaapiservice-1.0.xsd">
-  <bns:Payment>
-    <bns:CreditInvoiceNumber>123</bns:CreditInvoiceNumber>
-    <bns:DateTimePayment>2015-09-23T21:35:43</bns:DateTimePayment>
-    <bns:PaymentAmount>425.77</bns:PaymentAmount>
-    <bns:PaymentShipments>
-      <bns:PaymentShipment>
-        <bns:ShipmentId>456</bns:ShipmentId>
-        <bns:OrderId>123001</bns:OrderId>
-        <bns:PaymentShipmentAmount>425.77</bns:PaymentShipmentAmount>
-        <bns:PaymentStatus>FINAL</bns:PaymentStatus>
-        <bns:ShipmentDate>2015-09-23T21:35:43</bns:ShipmentDate>
-        <bns:PaymentShipmentItems>
-          <bns:PaymentShipmentItem>
-            <bns:OrderItemId>123001001</bns:OrderItemId>
-            <bns:EAN>9789062387410</bns:EAN>
-            <bns:OfferReference>PARTNERREF001</bns:OfferReference>
-            <bns:Quantity>1</bns:Quantity>
-            <bns:OfferPrice>425.77</bns:OfferPrice>
-            <bns:ShippingContribution>1.95</bns:ShippingContribution>
-            <bns:TransactionFee>10.00</bns:TransactionFee>
-            <bns:TotalAmount>425.77</bns:TotalAmount>
-            <bns:ShipmentStatus>NORMAL</bns:ShipmentStatus>
-          </bns:PaymentShipmentItem>
-        </bns:PaymentShipmentItems>
-      </bns:PaymentShipment>
-    </bns:PaymentShipments>
-  </bns:Payment>
-</bns:Payments>"""
-
-
 SHIPMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Shipments xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
     <Shipment>
@@ -210,11 +177,6 @@ def orders_stub(url, request):
     return ORDERS_RESPONSE
 
 
-@urlmatch(path=r'/services/rest/payments/v2/201501$')
-def payments_stub(url, request):
-    return PAYMENTS_RESPONSE
-
-
 @urlmatch(path=r'/services/rest/shipments/v2$')
 def shipments_stub(url, request):
     return SHIPMENTS_RESPONSE
@@ -313,24 +275,6 @@ def test_order_process():
             transporter_code=TransporterCode.GLS,
             track_and_trace='3S123')
         assert process_status.sellerId == '12345678'
-
-
-def test_payments():
-    with HTTMock(payments_stub):
-        api = PlazaAPI('api_key', 'api_secret', test=True)
-        payments = api.payments.list(2015, 1)
-
-        assert len(payments) == 1
-        payment = payments[0]
-        assert payment.PaymentAmount == Decimal('425.77')
-        assert payment.DateTimePayment == datetime(2015, 9, 23, 21, 35, 43)
-        assert payment.CreditInvoiceNumber == '123'
-        assert len(payment.PaymentShipments) == 1
-        shipment = payment.PaymentShipments[0]
-        assert shipment.OrderId == '123001'
-        assert shipment.ShipmentId == '456'
-        assert shipment.PaymentShipmentAmount == Decimal('425.77')
-        assert shipment.PaymentStatus == 'FINAL'
 
 
 def test_shipments():
