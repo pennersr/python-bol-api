@@ -205,6 +205,7 @@ class Shipment(Model):
         ExpectedDeliveryDate = DateTimeField()
         ShipmentItems = ModelField(ShipmentItems)
         Transport = ModelField(Transport)
+        CustomerDetails = ModelField(CustomerDetails)
 
 
 class Shipments(ModelList):
