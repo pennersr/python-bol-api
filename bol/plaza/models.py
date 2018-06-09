@@ -157,6 +157,7 @@ class OrderItem(Model):
         OfferPrice = DecimalField()
         TransactionFee = DecimalField()
         Quantity = IntegerField()
+        OrderDate = DateTimeField()
 
 
 class OrderItems(ModelList):
@@ -202,6 +203,7 @@ class Shipment(Model):
 
     class Meta:
         ShipmentDate = DateTimeField()
+        CustomerDetails = ModelField(CustomerDetails)
         ExpectedDeliveryDate = DateTimeField()
         ShipmentItems = ModelField(ShipmentItems)
         Transport = ModelField(Transport)
@@ -217,3 +219,44 @@ class ProcessStatus(Model):
 
     class Meta:
         pass
+
+
+# models used for 'get single offer' method  ::
+# RetailerOfferStatus, RetailerOffer, RetailerOffers, OffersResponse
+
+
+class RetailerOfferStatus(Model):
+
+    class Meta:
+        Published = BooleanField()
+        ErrorCode = TextField()
+        ErrorMessage = TextField()
+
+
+class RetailerOffer(Model):
+
+    class Meta:
+        EAN = TextField()
+        Condition = TextField()
+        Price = DecimalField()
+        DeliveryCode = TextField()
+        QuantityInStock = DecimalField()
+        UnreservedStock = DecimalField()
+        Publish = BooleanField()
+        ReferenceCode = TextField()
+        Description = TextField()
+        Title = TextField()
+        FulfillmentMethod = TextField()
+        item_type = RetailerOfferStatus()
+
+
+class RetailerOffers(ModelList):
+
+    class Meta:
+        item_type = RetailerOffer()
+
+
+class OffersResponse(ModelList):
+
+    class Meta:
+        item_type = RetailerOffers()

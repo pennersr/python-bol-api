@@ -11,7 +11,7 @@ from xml.etree import ElementTree
 
 from .models import (
     Orders, Shipments, ProcessStatus, Invoices, Invoice,
-    InvoiceSpecifications)
+    InvoiceSpecifications, OffersResponse)
 
 
 __all__ = ['PlazaAPI']
@@ -67,7 +67,7 @@ class MethodGroup(object):
 
     def request(self, method, path='', params={}, data=None):
         uri = path
-        if not uri.startswith('/services'):
+        if not uri.startswith('/services') and not uri.startswith('/offers'):
             uri = '/services/rest/{group}/{version}{path}'.format(
                 group=self.group,
                 version=self.api.version,
@@ -117,9 +117,29 @@ class OrderMethods(MethodGroup):
     def __init__(self, api):
         super(OrderMethods, self).__init__(api, 'orders')
 
-    def list(self):
-        xml = self.request('GET')
+    def list(self, page=1):
+        if page is not None:
+            params = {'page': page}
+        else:
+            params = None
+
+        xml = self.request('GET', params=params)
         return Orders.parse(self.api, xml)
+
+
+class OffersMethods(MethodGroup):
+
+    def __init__(self, api, condition='NEW'):
+        super(OffersMethods, self).__init__(api, 'offers')
+
+    def get_single_offer(self, ean):
+        uri = '/{group}/{version}{path}'.format(
+            group=self.group,
+            version=self.api.version,
+            path='/{}'.format(ean))
+
+        xml = self.api.request('GET', uri, {})
+        return OffersResponse.parse(self.api, xml)
 
 
 class InvoiceMethods(MethodGroup):
@@ -231,6 +251,7 @@ class PlazaAPI(object):
         self.shipments = ShipmentMethods(self)
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)
+        self.offers = OffersMethods(self)
         self.session = session or requests.Session()
 
     def request(self, method, uri, params={}, data=None):
@@ -265,6 +286,7 @@ x-bol-date:{date}
         if data:
             request_kwargs['data'] = data
         resp = self.session.request(**request_kwargs)
+
         resp.raise_for_status()
         tree = ElementTree.fromstring(resp.content)
         return tree
