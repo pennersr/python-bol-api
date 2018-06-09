@@ -260,3 +260,22 @@ class OffersResponse(ModelList):
 
     class Meta:
         item_type = RetailerOffers()
+
+
+class ReturnItem(Model):
+
+    class Meta:
+        ReturnNumber = IntegerField()
+        OrderId = IntegerField()
+        ShipmentId = IntegerField()
+        EAN = TextField()
+        Title = TextField()
+        Quantity = TextField()
+        ReturnDateAnnouncement = TextField()
+        ReturnReason = TextField()
+        customer_details = CustomerDetails
+
+class ReturnItems(ModelList):
+
+    class Meta:
+        item_type = ReturnItem

@@ -11,7 +11,7 @@ from xml.etree import ElementTree
 
 from .models import (
     Orders, Shipments, ProcessStatus, Invoices, Invoice,
-    InvoiceSpecifications, OffersResponse)
+    InvoiceSpecifications, OffersResponse, ReturnItems)
 
 
 __all__ = ['PlazaAPI']
@@ -142,6 +142,16 @@ class OffersMethods(MethodGroup):
         return OffersResponse.parse(self.api, xml)
 
 
+class ReturnItemsMethods(MethodGroup):
+
+    def __init__(self, api):
+        super(ReturnItemsMethods, self).__init__(api, 'return-items')
+
+    def list(self):
+        xml = self.request('GET', path="/unhandled")
+        return ReturnItems.parse(self.api, xml)
+
+
 class InvoiceMethods(MethodGroup):
 
     def __init__(self, api):
@@ -252,6 +262,7 @@ class PlazaAPI(object):
         self.process_status = ProcessStatusMethods(self)
         self.transports = TransportMethods(self)
         self.offers = OffersMethods(self)
+        self.return_items = ReturnItemsMethods(self)
         self.session = session or requests.Session()
 
     def request(self, method, uri, params={}, data=None):
