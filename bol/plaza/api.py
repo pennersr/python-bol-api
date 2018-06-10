@@ -11,7 +11,8 @@ from xml.etree import ElementTree
 
 from .models import (
     Orders, Shipments, ProcessStatus, Invoices, Invoice,
-    InvoiceSpecifications, OffersResponse, ReturnItems)
+    InvoiceSpecifications, OffersResponse, ReturnItems,
+    CommissionResponse)
 
 
 __all__ = ['PlazaAPI']
@@ -67,7 +68,7 @@ class MethodGroup(object):
 
     def request(self, method, path='', params={}, data=None):
         uri = path
-        if not uri.startswith('/services') and not uri.startswith('/offers'):
+        if not uri.startswith('/services'):
             uri = '/services/rest/{group}/{version}{path}'.format(
                 group=self.group,
                 version=self.api.version,
@@ -150,6 +151,23 @@ class ReturnItemsMethods(MethodGroup):
     def list(self):
         xml = self.request('GET', path="/unhandled")
         return ReturnItems.parse(self.api, xml)
+
+
+class CommissionMethods(MethodGroup):
+    def __init__(self, api):
+        super(CommissionMethods, self).__init__(api, 'commission')
+
+    def get_commission(self, ean, condition, price):
+        params = {'condition': condition, 'price': price}
+
+        uri = '/{group}/{version}{path}'.format(
+            group=self.group,
+            version=self.api.version,
+            path='/{}'.format(ean))
+
+        xml = self.api.request('GET', uri, params)
+
+        return CommissionResponse.parse(self.api, xml)
 
 
 class InvoiceMethods(MethodGroup):
@@ -263,6 +281,7 @@ class PlazaAPI(object):
         self.transports = TransportMethods(self)
         self.offers = OffersMethods(self)
         self.return_items = ReturnItemsMethods(self)
+        self.commission = CommissionMethods(self)
         self.session = session or requests.Session()
 
     def request(self, method, uri, params={}, data=None):

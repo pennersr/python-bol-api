@@ -279,3 +279,11 @@ class ReturnItems(ModelList):
 
     class Meta:
         item_type = ReturnItem
+
+
+class CommissionResponse(Model):
+
+    class Meta:
+        FixedAmount = DecimalField()
+        Percentage = IntegerField()
+        TotalCost = DecimalField()
