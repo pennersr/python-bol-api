@@ -65,20 +65,20 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, path='', params={}, data=None):
+    def request(self, method, path='', params={}, data=None, headers={}):
         uri = path
         if not uri.startswith('/services'):
             uri = '/services/rest/{group}/{version}{path}'.format(
                 group=self.group,
                 version=self.api.version,
                 path=path)
-        xml = self.api.request(method, uri, params=params, data=data)
+        xml = self.api.request(method, uri, params=params, data=data, headers=headers)
         return xml
 
     def create_request_xml(self, root, **kwargs):
         elements = self._create_request_xml_elements(1, **kwargs)
         xml = """<?xml version="1.0" encoding="UTF-8"?>
-<{root} xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
+<{root} xmlns="https://plazaapi.bol.com/services/xsd/v2.1/plazaapi.xsd">
 {elements}
 </{root}>
 """.format(root=root, elements=elements)
@@ -117,8 +117,13 @@ class OrderMethods(MethodGroup):
     def __init__(self, api):
         super(OrderMethods, self).__init__(api, 'orders')
 
-    def list(self):
-        xml = self.request('GET')
+    def list(self, page=None, fulfilment_method=None):
+        params = {}
+        if page is not None:
+            params['page'] = page
+        if fulfilment_method is not None:
+            params['fulfilment-method'] = fulfilment_method
+        xml = self.request('GET', params=params, headers=headers)
         return Orders.parse(self.api, xml)
 
 
@@ -174,12 +179,14 @@ class ShipmentMethods(MethodGroup):
     def __init__(self, api):
         super(ShipmentMethods, self).__init__(api, 'shipments')
 
-    def list(self, page=None):
+    def list(self, page=None, fulfilment_method=None):
+        params = {}
         if page is not None:
-            params = {'page': page}
-        else:
-            params = None
-        xml = self.request('GET', params=params)
+            params['page'] = page
+        if fulfilment_method is not None:
+            params['fulfilment-method'] = fulfilment_method
+        headers = {'Accept': 'application/vnd.shipments-v2.1+xml'}
+        xml = self.request('GET', params=params, headers=headers)
         return Shipments.parse(self.api, xml)
 
     def create(self, order_item_id, date_time, expected_delivery_date,
@@ -233,7 +240,7 @@ class PlazaAPI(object):
         self.transports = TransportMethods(self)
         self.session = session or requests.Session()
 
-    def request(self, method, uri, params={}, data=None):
+    def request(self, method, uri, params={}, data=None, headers={}):
         content_type = 'application/xml; charset=UTF-8'
         date = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
         msg = """{method}
@@ -252,9 +259,9 @@ x-bol-date:{date}
 
         signature = self.public_key.encode('utf-8') + b':' + b64
 
-        headers = {'Content-Type': content_type,
+        headers.update({'Content-Type': content_type,
                    'X-BOL-Date': date,
-                   'X-BOL-Authorization': signature}
+                   'X-BOL-Authorization': signature})
         request_kwargs = {
             'method': method,
             'url': self.url + uri,
