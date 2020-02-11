@@ -23,13 +23,11 @@ class TransporterCode(Enum):
     """
     DHLFORYOU = 'DHLFORYOU'
     UPS = 'UPS'
-    KIALA_BE = 'KIALA-BE'
-    KIALA_NL = 'KIALA-NL'
     TNT = 'TNT'
     TNT_EXTRA = 'TNT-EXTRA'
     TNT_BRIEF = 'TNT_BRIEF'
     TNT_EXPRESS = 'TNT-EXPRESS'
-    SLV = 'SLV'
+    COURIER = 'COURIER'
     DYL = 'DYL'
     DPD_NL = 'DPD-NL'
     DPD_BE = 'DPD-BE'
@@ -49,6 +47,7 @@ class TransporterCode(Enum):
     PARCEL_NL = 'PARCEL-NL'
     LOGOIX = 'LOGOIX'
     PACKS = 'PACKS'
+    RJP = 'RJP'
 
     @classmethod
     def to_string(cls, transporter_code):
