@@ -14,6 +14,9 @@ python-bol-api
 .. image:: https://pennersr.github.io/img/bitcoin-badge.svg
    :target: https://blockchain.info/address/1AJXuBMPHkaDCNX2rwAy34bGgs7hmrePEr
 
+.. image:: https://pennersr.github.io/img/emacs-badge.svg
+   :target: https://www.gnu.org/software/emacs/
+
 A Python wrapper for the bol.com API. Currently rather incomplete, as
 it offers only those methods required for my own projects so far.
 
