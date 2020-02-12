@@ -86,6 +86,44 @@ Create a shipment::
     "CONFIRM_SHPMENT"
 
 
+Retailer API
+============
+
+Supports the BOL API V3, documented here: https://developers.bol.com/apiv3authentication/
+
+Instantiate the API::
+
+    >>> from bol.retailer.api import RetailerAPI
+    >>> api = RetailerAPI()
+
+Authenticate::
+
+    >>> api.login('client_id', 'client_secret')
+
+Invoke a method::
+
+    >>> orders = api.orders.list()
+    >>> order = api.orders.get(orders[0].orderId))
+
+Fields are derived 1:1 from the bol.com API, including lower-CamelCase
+conventions::
+
+    >>> order.customerDetails.shipmentDetails.streetName
+    'Billingstraat'
+
+Fields are properly typed::
+
+    >>> repr(order.dateTimeOrderPlace)
+    datetime.datetime(2020, 2, 12, 16, 6, 17, tzinfo=tzoffset(None, 3600))
+    >>> repr(order.orderItems[0].offerPrice)
+    Decimal('106.52')
+
+Access the underlying raw (unparsed) data at any time::
+
+    >>> order.raw_data
+    >>> order.raw_content
+
+
 Running the tests
 =================
 

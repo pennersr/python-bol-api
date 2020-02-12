@@ -1,0 +1,119 @@
+import requests
+
+from .constants import FulfilmentMethod
+from .models import Order, Orders, ProcessStatus, Shipment, Shipments
+
+__all__ = ["RetailerAPI"]
+
+
+class MethodGroup(object):
+    def __init__(self, api, group):
+        self.api = api
+        self.group = group
+
+    def request(self, method, path="", params={}, data=None):
+        uri = path
+        if not uri.startswith("/"):
+            uri = "/retailer/{group}{path}".format(
+                group=self.group, path=("/{}".format(path) if path else "")
+            )
+        return self.api.request(method, uri, params=params, data=data)
+
+
+class OrderMethods(MethodGroup):
+    def __init__(self, api):
+        super(OrderMethods, self).__init__(api, "orders")
+
+    def list(self, fulfilment_method=None, page=None):
+        params = {}
+        if fulfilment_method:
+            params["fulfilment-method"] = FulfilmentMethod.to_string(
+                fulfilment_method
+            )
+        if page is not None:
+            params["page"] = page
+        resp = self.request("GET", params=params)
+        return Orders.parse(self.api, resp.text)
+
+    def get(self, order_id):
+        resp = self.request("GET", path=order_id)
+        return Order.parse(self.api, resp.text)
+
+    def ship_order_item(self, order_item_id, payload):
+        resp = self.request(
+            "PUT", path="{}/shipment".format(order_item_id), json=payload
+        )
+        return ProcessStatus.parse(self.api, resp.text)
+
+
+class ShipmentMethods(MethodGroup):
+    def __init__(self, api):
+        super(ShipmentMethods, self).__init__(api, "shipments")
+
+    def list(self, fulfilment_method=None, page=None, order_id=None):
+        params = {}
+        if fulfilment_method:
+            params["fulfilment-method"] = fulfilment_method.value
+        if page is not None:
+            params["page"] = page
+        if order_id:
+            params["order_id"] = order_id
+        resp = self.request("GET", params=params)
+        return Shipments.parse(self.api, resp.text)
+
+    def get(self, shipment_id):
+        resp = self.request("GET", path=str(shipment_id))
+        return Shipment.parse(self.api, resp.text)
+
+
+class RetailerAPI(object):
+    def __init__(
+        self, test=False, timeout=None, session=None, access_token=None
+    ):
+        self.url = "https://api.bol.com"
+        self.timeout = timeout
+        self.orders = OrderMethods(self)
+        self.shipments = ShipmentMethods(self)
+        self.session = session or requests.Session()
+        self.session.headers.update({"Accept": "application/json"})
+        if access_token:
+            self._use_token({"access_token": access_token})
+
+    def login(self, client_id, client_secret):
+        data = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "client_credentials",
+        }
+        resp = self.session.post(
+            "https://login.bol.com/token",
+            auth=(client_id, client_secret),
+            data=data,
+        )
+        resp.raise_for_status()
+        token = resp.json()
+        self._use_token(token)
+        return token
+
+    def _use_token(self, token):
+        self.token = token
+        self.session.headers.update(
+            {
+                "Authorization": "Bearer " + self.token["access_token"],
+                "Accept": "application/vnd.retailer.v3+json",
+            }
+        )
+
+    def request(self, method, uri, params={}, **kwargs):
+        request_kwargs = dict(**kwargs)
+        request_kwargs.update(
+            {
+                "method": method,
+                "url": self.url + uri,
+                "params": params,
+                "timeout": self.timeout,
+            }
+        )
+        resp = self.session.request(**request_kwargs)
+        resp.raise_for_status()
+        return resp
