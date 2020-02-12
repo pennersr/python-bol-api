@@ -1,7 +1,16 @@
 import requests
 
 from .constants import FulfilmentMethod
-from .models import Order, Orders, ProcessStatus, Shipment, Shipments
+from .models import (
+    Invoice,
+    Invoices,
+    InvoiceSpecification,
+    Order,
+    Orders,
+    ProcessStatus,
+    Shipment,
+    Shipments,
+)
 
 __all__ = ["RetailerAPI"]
 
@@ -66,6 +75,29 @@ class ShipmentMethods(MethodGroup):
         return Shipment.parse(self.api, resp.text)
 
 
+class InvoiceMethods(MethodGroup):
+    def __init__(self, api):
+        super(InvoiceMethods, self).__init__(api, "invoices")
+
+    def list(self, period_start=None, period_end=None):
+        params = {}
+        resp = self.request("GET", params=params)
+        return Invoices.parse(self.api, resp.text)
+
+    def get(self, invoice_id):
+        resp = self.request("GET", path=str(invoice_id))
+        return Invoice.parse(self.api, resp.text)
+
+    def get_specification(self, invoice_id, page=None):
+        params = {}
+        if page is not None:
+            params["page"] = page
+        resp = self.request(
+            "GET", path="{}/specification".format(invoice_id), params=params
+        )
+        return InvoiceSpecification.parse(self.api, resp.text)
+
+
 class RetailerAPI(object):
     def __init__(
         self, test=False, timeout=None, session=None, access_token=None
@@ -74,6 +106,7 @@ class RetailerAPI(object):
         self.timeout = timeout
         self.orders = OrderMethods(self)
         self.shipments = ShipmentMethods(self)
+        self.invoices = InvoiceMethods(self)
         self.session = session or requests.Session()
         self.session.headers.update({"Accept": "application/json"})
         if access_token:

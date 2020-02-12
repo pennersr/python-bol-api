@@ -10,7 +10,7 @@ def parse_json(content):
 
 
 class Field(object):
-    def parse(self, api, xml, instance):
+    def parse(self, api, raw_data, instance):
         raise NotImplementedError
 
 
@@ -172,3 +172,25 @@ class Shipments(ModelList):
 class ProcessStatus(Model):
     class Meta:
         createTimestamp = DateTimeField()
+
+
+class Invoice(Model):
+    class Meta:
+        pass
+
+
+class Invoices(ModelList):
+    class Meta:
+        item_type = Invoice
+        items_key = "invoiceListItems"
+
+
+class InvoiceSpecificationItem(Model):
+    class Meta:
+        pass
+
+
+class InvoiceSpecification(ModelList):
+    class Meta:
+        item_type = InvoiceSpecificationItem
+        items_key = "invoiceSpecification"
