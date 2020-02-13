@@ -46,7 +46,27 @@ class OrderMethods(MethodGroup):
         resp = self.request("GET", path=order_id)
         return Order.parse(self.api, resp.text)
 
-    def ship_order_item(self, order_item_id, payload):
+    def ship_order_item(
+        self,
+        order_item_id,
+        shipment_reference=None,
+        shipping_label_code=None,
+        transporter_code=None,
+        track_and_trace=None,
+    ):
+        payload = {}
+        if shipment_reference:
+            payload["shipmentReference"] = shipment_reference
+        if shipping_label_code:
+            payload["shippingLabelCode"] = shipping_label_code
+        if transporter_code:
+            payload.setdefault("transport", {})[
+                "transporterCode"
+            ] = transporter_code
+        if track_and_trace:
+            payload.setdefault("transport", {})[
+                "trackAndTrace"
+            ] = track_and_trace
         resp = self.request(
             "PUT", path="{}/shipment".format(order_item_id), json=payload
         )
