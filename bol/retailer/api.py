@@ -123,14 +123,13 @@ class RetailerAPI(object):
         )
         resp.raise_for_status()
         token = resp.json()
-        self._use_token(token)
+        self.set_access_token(token["access_token"])
         return token
 
-    def _use_token(self, token):
-        self.token = token
+    def set_access_token(self, access_token):
         self.session.headers.update(
             {
-                "Authorization": "Bearer " + self.token["access_token"],
+                "Authorization": "Bearer " + access_token,
                 "Accept": "application/vnd.retailer.v3+json",
             }
         )
