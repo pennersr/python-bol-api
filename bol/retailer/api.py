@@ -146,9 +146,12 @@ class RetailerAPI(object):
         session=None,
         access_token=None,
         demo=False,
+        api_url="https://api.bol.com",
+        login_url="https://login.bol.com",
     ):
         self.demo = demo
-        self.url = "https://api.bol.com"
+        self.api_url = api_url
+        self.login_url = login_url
         self.timeout = timeout
         self.orders = OrderMethods(self)
         self.shipments = ShipmentMethods(self)
@@ -166,7 +169,7 @@ class RetailerAPI(object):
             "grant_type": "client_credentials",
         }
         resp = self.session.post(
-            "https://login.bol.com/token",
+            self.login_url + "/token",
             auth=(client_id, client_secret),
             data=data,
         )
@@ -188,7 +191,7 @@ class RetailerAPI(object):
         request_kwargs.update(
             {
                 "method": method,
-                "url": self.url + uri,
+                "url": self.api_url + uri,
                 "params": params,
                 "timeout": self.timeout,
             }
