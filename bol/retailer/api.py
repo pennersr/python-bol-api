@@ -23,8 +23,11 @@ class MethodGroup(object):
     def request(self, method, path="", params={}, data=None):
         uri = path
         if not uri.startswith("/"):
-            uri = "/retailer/{group}{path}".format(
-                group=self.group, path=("/{}".format(path) if path else "")
+            base = "retailer-demo" if self.api.demo else "retailer"
+            uri = "/{base}/{group}{path}".format(
+                base=base,
+                group=self.group,
+                path=("/{}".format(path) if path else ""),
             )
         return self.api.request(method, uri, params=params, data=data)
 
@@ -137,8 +140,14 @@ class InvoiceMethods(MethodGroup):
 
 class RetailerAPI(object):
     def __init__(
-        self, test=False, timeout=None, session=None, access_token=None
+        self,
+        test=False,
+        timeout=None,
+        session=None,
+        access_token=None,
+        demo=False,
     ):
+        self.demo = demo
         self.url = "https://api.bol.com"
         self.timeout = timeout
         self.orders = OrderMethods(self)
