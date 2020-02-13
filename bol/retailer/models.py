@@ -166,6 +166,12 @@ class ProcessStatus(Model):
         createTimestamp = DateTimeField()
 
 
+class ProcessStatuses(ModelList):
+    class Meta:
+        items_key = "processStatuses"
+        item_type = ProcessStatus
+
+
 class Invoice(Model):
     class Meta:
         pass

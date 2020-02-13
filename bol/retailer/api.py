@@ -1,6 +1,5 @@
 import requests
 
-from .constants import FulfilmentMethod
 from .models import (
     Invoice,
     Invoices,
@@ -8,6 +7,7 @@ from .models import (
     Order,
     Orders,
     ProcessStatus,
+    ProcessStatuses,
     Shipment,
     Shipments,
 )
@@ -80,6 +80,18 @@ class ShipmentMethods(MethodGroup):
         return Shipment.parse(self.api, resp.text)
 
 
+class ProcessStatusMethods(MethodGroup):
+    def __init__(self, api):
+        super(ProcessStatusMethods, self).__init__(api, "process-status")
+
+    def get(self, entity_id, event_type, page=None):
+        params = {"entity-id": entity_id, "event-type": event_type}
+        if page:
+            params["page"] = page
+        resp = self.request("GET", params=params)
+        return ProcessStatuses.parse(self.api, resp.text)
+
+
 class InvoiceMethods(MethodGroup):
     def __init__(self, api):
         super(InvoiceMethods, self).__init__(api, "invoices")
@@ -112,6 +124,7 @@ class RetailerAPI(object):
         self.orders = OrderMethods(self)
         self.shipments = ShipmentMethods(self)
         self.invoices = InvoiceMethods(self)
+        self.process_status = ProcessStatusMethods(self)
         self.session = session or requests.Session()
         self.session.headers.update({"Accept": "application/json"})
         if access_token:
