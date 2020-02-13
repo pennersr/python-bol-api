@@ -24,14 +24,6 @@ class DecimalField(Field):
         return Decimal(raw_data)
 
 
-class EnumField(Field):
-    def __init__(self, enum_class):
-        self.enum_class = enum_class
-
-    def parse(self, api, raw_data, instance):
-        return self.enum_class(raw_data)
-
-
 class DateTimeField(Field):
     def parse(self, api, raw_data, instance):
         return dateutil.parser.parse(raw_data)

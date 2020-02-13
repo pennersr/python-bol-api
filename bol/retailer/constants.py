@@ -1,16 +1,4 @@
-from enum import Enum
-
-
-class ToStringableEnum(object):
-    @classmethod
-    def to_string(cls, v):
-        if isinstance(v, cls):
-            v = v.value
-        assert v in map(lambda c: c.value, list(cls))
-        return v
-
-
-class FulfilmentMethod(ToStringableEnum, Enum):
+class FulfilmentMethod:
     """
     The fulfilment method. Fulfilled by the retailer (FBR) or fulfilled by
     bol.com (FBB).
@@ -20,7 +8,7 @@ class FulfilmentMethod(ToStringableEnum, Enum):
     FBB = "FBB"
 
 
-class TransporterCode(ToStringableEnum, Enum):
+class TransporterCode:
     """
     https://api.bol.com/retailer/public/redoc/v3#tag/Transports
     """

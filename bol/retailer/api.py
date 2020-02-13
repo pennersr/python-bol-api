@@ -36,9 +36,7 @@ class OrderMethods(MethodGroup):
     def list(self, fulfilment_method=None, page=None):
         params = {}
         if fulfilment_method:
-            params["fulfilment-method"] = FulfilmentMethod.to_string(
-                fulfilment_method
-            )
+            params["fulfilment-method"] = fulfilment_method
         if page is not None:
             params["page"] = page
         resp = self.request("GET", params=params)
