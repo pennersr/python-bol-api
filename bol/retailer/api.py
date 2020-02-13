@@ -144,7 +144,6 @@ class RetailerAPI(object):
         test=False,
         timeout=None,
         session=None,
-        access_token=None,
         demo=False,
         api_url="https://api.bol.com",
         login_url="https://login.bol.com",
@@ -159,8 +158,6 @@ class RetailerAPI(object):
         self.process_status = ProcessStatusMethods(self)
         self.session = session or requests.Session()
         self.session.headers.update({"Accept": "application/json"})
-        if access_token:
-            self._use_token({"access_token": access_token})
 
     def login(self, client_id, client_secret):
         data = {
