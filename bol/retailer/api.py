@@ -145,12 +145,12 @@ class RetailerAPI(object):
         timeout=None,
         session=None,
         demo=False,
-        api_url="https://api.bol.com",
-        login_url="https://login.bol.com",
+        api_url=None,
+        login_url=None,
     ):
         self.demo = demo
-        self.api_url = api_url
-        self.login_url = login_url
+        self.api_url = api_url or "https://api.bol.com"
+        self.login_url = login_url or "https://login.bol.com"
         self.timeout = timeout
         self.orders = OrderMethods(self)
         self.shipments = ShipmentMethods(self)
