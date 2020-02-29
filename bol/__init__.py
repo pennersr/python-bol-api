@@ -1,4 +1,4 @@
-VERSION = (0, 7, 0, 'final', 0)
+VERSION = (0, 8, 0, 'final', 0)
 
 __title__ = 'python-bol-api'
 __version_info__ = VERSION
