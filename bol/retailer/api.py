@@ -20,7 +20,7 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, path="", params={}, data=None):
+    def request(self, method, path="", params={}, **kwargs):
         uri = path
         if not uri.startswith("/"):
             base = "retailer-demo" if self.api.demo else "retailer"
@@ -29,7 +29,7 @@ class MethodGroup(object):
                 group=self.group,
                 path=("/{}".format(path) if path else ""),
             )
-        return self.api.request(method, uri, params=params, data=data)
+        return self.api.request(method, uri, params=params, **kwargs)
 
 
 class OrderMethods(MethodGroup):
