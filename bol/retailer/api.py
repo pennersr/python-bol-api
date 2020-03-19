@@ -193,6 +193,15 @@ class RetailerAPI(object):
                 "timeout": self.timeout,
             }
         )
+        if "json" in request_kwargs:
+            if "headers" not in request_kwargs:
+                request_kwargs["headers"] = {}
+            # If these headers are not added, the api returns a 400
+            # Reference:
+            #   https://api.bol.com/retailer/public/conventions/index.html
+            request_kwargs["headers"].update({
+                "content-type": "application/vnd.retailer.v3+json"
+            })
         resp = self.session.request(**request_kwargs)
         resp.raise_for_status()
         return resp
