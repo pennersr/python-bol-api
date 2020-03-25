@@ -9,13 +9,13 @@ class MethodGroup(object):
         self.api = api
         self.group = group
 
-    def request(self, method, path):
+    def request(self, method, path, params={}):
         uri = '/{group}/{version}/{path}'.format(
             group=self.group,
             method=method,
             path=path,
             version=self.api.version)
-        return self.api.request(method, uri)
+        return self.api.request(method, uri, params=params)
 
 
 class CatalogMethods(MethodGroup):
