@@ -147,11 +147,13 @@ class RetailerAPI(object):
         demo=False,
         api_url=None,
         login_url=None,
+        refresh_token=None,
     ):
         self.demo = demo
         self.api_url = api_url or "https://api.bol.com"
         self.login_url = login_url or "https://login.bol.com"
         self.timeout = timeout
+        self.refresh_token = refresh_token
         self.orders = OrderMethods(self)
         self.shipments = ShipmentMethods(self)
         self.invoices = InvoiceMethods(self)
@@ -182,6 +184,12 @@ class RetailerAPI(object):
         refresh_token=None
     ):
 
+        if refresh_token is None and self.refresh_token is None:
+            raise ValueError("No 'refresh_token' provided")
+
+        if refresh_token is None and self.refresh_token is not None:
+            refresh_token = self.refresh_token
+
         params = {
             "grant_type": "refresh_token",
             "refresh_token": refresh_token
@@ -193,9 +201,10 @@ class RetailerAPI(object):
             auth=(username, password),
         )
         resp.raise_for_status()
-        token = resp.json()
-        self.set_access_token(token["access_token"])
-        return token
+        data = resp.json()
+        self.refresh_token = data["refresh_token"]
+        self.set_access_token(data["access_token"])
+        return data
 
     def set_access_token(self, access_token):
         self.session.headers.update(
