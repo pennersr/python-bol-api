@@ -175,6 +175,28 @@ class RetailerAPI(object):
         self.set_access_token(token["access_token"])
         return token
 
+    def refresh_access_token(
+        self,
+        username,
+        password,
+        refresh_token=None
+    ):
+
+        params = {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token
+        }
+
+        resp = self.session.post(
+            self.login_url + "/token",
+            params=params,
+            auth=(username, password),
+        )
+        resp.raise_for_status()
+        token = resp.json()
+        self.set_access_token(token["access_token"])
+        return token
+
     def set_access_token(self, access_token):
         self.session.headers.update(
             {
