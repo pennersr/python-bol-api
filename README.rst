@@ -28,7 +28,7 @@ Instantiate the API::
 
 Invoke a method::
 
-    >>> data = api.catalog.products((['1004004011187773', '1004004011231766'])
+    >>> data = api.catalog.products(['1004004011187773', '1004004011231766'])
 
 JSON data is returned "as is":
 
