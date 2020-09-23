@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 import bol
 
-# Dynamically calculate the version based on actistream.VERSION.
+# Dynamically calculate the version based on bol.VERSION.
 VERSION = bol.__version__
 IS_PY2 = sys.version_info[0] < 3
 
@@ -28,6 +28,10 @@ setup(name='python-bol-api',
           'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8',
           'License :: OSI Approved :: '
           'GNU Lesser General Public License v3 or later (LGPLv3+)',
       ],
