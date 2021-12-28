@@ -100,7 +100,7 @@ Authenticate::
 Invoke a method::
 
     >>> orders = api.orders.list()
-    >>> order = api.orders.get(orders[0].orderId))
+    >>> order = api.orders.get(orders[0].orderId)
 
 Fields are derived 1:1 from the bol.com API, including lower-CamelCase
 conventions::
