@@ -61,7 +61,7 @@ class Model(object):
     def parse(cls, api, xml):
         m = cls()
         m.xml = xml
-        for element in xml.getchildren():
+        for element in xml:
             if '}' in element.tag:
                 tag = element.tag.partition('}')[2]
             elif ':' in element.tag:
@@ -80,7 +80,7 @@ class ModelList(list, Model):
         ml = cls()
         ml.xml = xml
         item_tag = getattr(ml.Meta, 'item_type_tag', None)
-        for element in xml.getchildren():
+        for element in xml:
             if item_tag and item_tag != element.tag:
                 continue
             ml.append(ml.Meta.item_type.parse(api, element))
