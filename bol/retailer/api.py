@@ -15,7 +15,7 @@ from .models import (
 __all__ = ["RetailerAPI"]
 
 
-class MethodGroup(object):
+class MethodGroup:
     def __init__(self, api, group):
         self.api = api
         self.group = group
@@ -63,13 +63,9 @@ class OrderMethods(MethodGroup):
         if shipping_label_code:
             payload["shippingLabelCode"] = shipping_label_code
         if transporter_code:
-            payload.setdefault("transport", {})[
-                "transporterCode"
-            ] = transporter_code
+            payload.setdefault("transport", {})["transporterCode"] = transporter_code
         if track_and_trace:
-            payload.setdefault("transport", {})[
-                "trackAndTrace"
-            ] = track_and_trace
+            payload.setdefault("transport", {})["trackAndTrace"] = track_and_trace
         resp = self.request(
             "PUT", path="{}/shipment".format(order_item_id), json=payload
         )
@@ -138,7 +134,7 @@ class InvoiceMethods(MethodGroup):
         return InvoiceSpecification.parse(self.api, resp.text)
 
 
-class RetailerAPI(object):
+class RetailerAPI:
     def __init__(
         self,
         test=False,
@@ -177,12 +173,7 @@ class RetailerAPI(object):
         self.set_access_token(token["access_token"])
         return token
 
-    def refresh_access_token(
-        self,
-        username,
-        password,
-        refresh_token=None
-    ):
+    def refresh_access_token(self, username, password, refresh_token=None):
 
         if refresh_token is None and self.refresh_token is None:
             raise ValueError("No 'refresh_token' provided")
@@ -190,10 +181,7 @@ class RetailerAPI(object):
         if refresh_token is None and self.refresh_token is not None:
             refresh_token = self.refresh_token
 
-        params = {
-            "grant_type": "refresh_token",
-            "refresh_token": refresh_token
-        }
+        params = {"grant_type": "refresh_token", "refresh_token": refresh_token}
 
         resp = self.session.post(
             self.login_url + "/token",
@@ -230,9 +218,9 @@ class RetailerAPI(object):
             # If these headers are not added, the api returns a 400
             # Reference:
             #   https://api.bol.com/retailer/public/conventions/index.html
-            request_kwargs["headers"].update({
-                "content-type": "application/vnd.retailer.v3+json"
-            })
+            request_kwargs["headers"].update(
+                {"content-type": "application/vnd.retailer.v3+json"}
+            )
         resp = self.session.request(**request_kwargs)
         resp.raise_for_status()
         return resp
