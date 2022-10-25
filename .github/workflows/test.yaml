@@ -1,0 +1,35 @@
+name: test incoming change
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: setup-python::${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: install
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -e . -r requirements.txt
+      - name: lint::black
+        run: |
+          .venv/bin/black --check --diff .
+      - name: lint::isort
+        run: |
+          .venv/bin/black --check --diff .
+      - name: test
+        run: |
+          .venv/bin/pytest .
