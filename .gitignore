@@ -4,5 +4,7 @@ build
 *.pyc
 .cache
 .tox
+.venv/
+venv/
 *~
 /.pytest_cache/

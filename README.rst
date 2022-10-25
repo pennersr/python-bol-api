@@ -124,10 +124,15 @@ Access the underlying raw (unparsed) data at any time::
 Running the tests
 =================
 
-First, make sure that you have ``tox`` installed on your system::
+First, create virtualenv for project and install dev dependencies::
 
-    pip install tox
+    python -m venv .venv
+    . .venv/bin/activate
+    pip install -e . -r requirements.txt
 
-Then, just run the tox::
+Then, just run the code linters and unit tests::
 
-    tox
+    black .
+    isort .
+    pytest .
+
