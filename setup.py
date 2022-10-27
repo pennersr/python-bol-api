@@ -1,5 +1,7 @@
 from setuptools import setup, find_packages
 
+VERSION = "0.9.1"
+
 install_requires = [
     "python-dateutil",
     "requests",
@@ -7,7 +9,7 @@ install_requires = [
 
 setup(
     name="python-bol-api",
-    version="0.9.1",
+    version=VERSION,
     description="Wrapper for the bol.com API",
     classifiers=[
         "Development Status :: 4 - Beta",

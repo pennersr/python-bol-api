@@ -13,3 +13,11 @@ httmock = "^1"
 
 [tool.isort]
 profile = "black"
+
+[tool.semantic_release]
+version_variable = "setup.py:VERSION"
+version_source = "tag"
+commit_version_number = true
+commit_subject = "chore(release): {version}"
+hvcs = "github"
+upload_release = true
