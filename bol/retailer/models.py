@@ -1,17 +1,8 @@
 import json
-import sys
 from datetime import date
 from decimal import Decimal
 
 import dateutil.parser
-
-
-def _is_str(v):
-    if sys.version_info >= (3, 0, 0):
-        string_types = (str,)
-    else:
-        string_types = (basestring,)
-    return isinstance(v, string_types)
 
 
 def parse_json(content):
@@ -59,7 +50,7 @@ class BaseModel(object):
     @classmethod
     def parse(cls, api, content):
         m = cls()
-        if _is_str(content):
+        if isinstance(content, str):
             m.raw_content = content
             m.raw_data = parse_json(content)
         else:

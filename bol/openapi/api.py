@@ -1,5 +1,6 @@
 import requests
 
+
 __all__ = ["OpenAPI"]
 
 
@@ -11,7 +12,6 @@ class MethodGroup(object):
     def request(self, method, path, params={}):
         uri = "/{group}/{version}/{path}".format(
             group=self.group,
-            method=method,
             path=path,
             version=self.api.version,
         )
