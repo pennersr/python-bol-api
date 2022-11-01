@@ -2,8 +2,8 @@
 python-bol-api
 ==============
 
-.. image:: https://travis-ci.org/pennersr/python-bol-api.png
-   :target: http://travis-ci.org/pennersr/python-bol-api
+.. image:: https://github.com/pennersr/python-bol-api/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/pennersr/python-bol-api/actions
 
 .. image:: https://img.shields.io/pypi/v/python-bol-api.svg
    :target: https://pypi.python.org/pypi/python-bol-api
