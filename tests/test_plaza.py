@@ -145,8 +145,7 @@ SHIPMENTS_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 """
 
 
-CREATE_SHIPMENT_RESPONSE = \
-    """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+CREATE_SHIPMENT_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns1:ProcessStatus
     xmlns:ns1="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
     <ns1:id>0</ns1:id>
@@ -158,8 +157,7 @@ CREATE_SHIPMENT_RESPONSE = \
 </ns1:ProcessStatus>
 """
 
-UPDATE_TRANSPORT_RESPONSE = \
-     """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+UPDATE_TRANSPORT_RESPONSE = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns1:ProcessStatus
      xmlns:ns1="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
      <ns1:id>0</ns1:id>
@@ -172,86 +170,94 @@ UPDATE_TRANSPORT_RESPONSE = \
 """
 
 
-@urlmatch(path=r'/services/rest/orders/v2$')
+@urlmatch(path=r"/services/rest/orders/v2$")
 def orders_stub(url, request):
     return ORDERS_RESPONSE
 
 
-@urlmatch(path=r'/services/rest/shipments/v2$')
+@urlmatch(path=r"/services/rest/shipments/v2$")
 def shipments_stub(url, request):
     return SHIPMENTS_RESPONSE
 
 
 def test_orders():
     with HTTMock(orders_stub):
-        api = PlazaAPI('api_key', 'api_secret', test=True)
+        api = PlazaAPI("api_key", "api_secret", test=True)
         orders = api.orders.list()
         assert len(orders) == 1
 
         order = orders[0]
-        assert order.OrderId == '123'
+        assert order.OrderId == "123"
 
-        assert order.CustomerDetails.BillingDetails.SalutationCode == '02'
-        assert order.CustomerDetails.BillingDetails.Firstname == 'Jans'
-        assert order.CustomerDetails.BillingDetails.Surname == 'Janssen'
+        assert order.CustomerDetails.BillingDetails.SalutationCode == "02"
+        assert order.CustomerDetails.BillingDetails.Firstname == "Jans"
+        assert order.CustomerDetails.BillingDetails.Surname == "Janssen"
         assert (
-            order.CustomerDetails.BillingDetails.Streetname ==
-            'Billingstraat')
-        assert order.CustomerDetails.BillingDetails.Housenumber == '1'
-        assert order.CustomerDetails.BillingDetails.HousenumberExtended == 'a'
+            order.CustomerDetails.BillingDetails.Streetname == "Billingstraat"
+        )
+        assert order.CustomerDetails.BillingDetails.Housenumber == "1"
+        assert order.CustomerDetails.BillingDetails.HousenumberExtended == "a"
         assert (
-            order.CustomerDetails.BillingDetails.AddressSupplement ==
-            'Onder de brievenbus')
-        assert order.CustomerDetails.BillingDetails.ZipCode == '5000 ZZ'
-        assert order.CustomerDetails.BillingDetails.City == 'Amsterdam'
-        assert order.CustomerDetails.BillingDetails.CountryCode == 'NL'
-        assert order.CustomerDetails.BillingDetails.Email == 'dontemail@me.net'
+            order.CustomerDetails.BillingDetails.AddressSupplement
+            == "Onder de brievenbus"
+        )
+        assert order.CustomerDetails.BillingDetails.ZipCode == "5000 ZZ"
+        assert order.CustomerDetails.BillingDetails.City == "Amsterdam"
+        assert order.CustomerDetails.BillingDetails.CountryCode == "NL"
+        assert order.CustomerDetails.BillingDetails.Email == "dontemail@me.net"
         assert (
-            order.CustomerDetails.BillingDetails.DeliveryPhoneNumber ==
-            '67890')
-        assert order.CustomerDetails.BillingDetails.Company == 'Bol.com'
+            order.CustomerDetails.BillingDetails.DeliveryPhoneNumber == "67890"
+        )
+        assert order.CustomerDetails.BillingDetails.Company == "Bol.com"
 
-        assert order.CustomerDetails.ShipmentDetails.SalutationCode == '01'
-        assert order.CustomerDetails.ShipmentDetails.Firstname == 'Jan'
-        assert order.CustomerDetails.ShipmentDetails.Surname == 'Janssen'
+        assert order.CustomerDetails.ShipmentDetails.SalutationCode == "01"
+        assert order.CustomerDetails.ShipmentDetails.Firstname == "Jan"
+        assert order.CustomerDetails.ShipmentDetails.Surname == "Janssen"
         assert (
-            order.CustomerDetails.ShipmentDetails.Streetname ==
-            'Shipmentstraat')
-        assert order.CustomerDetails.ShipmentDetails.Housenumber == '42'
+            order.CustomerDetails.ShipmentDetails.Streetname
+            == "Shipmentstraat"
+        )
+        assert order.CustomerDetails.ShipmentDetails.Housenumber == "42"
         assert (
-            order.CustomerDetails.ShipmentDetails.HousenumberExtended == 'bis')
+            order.CustomerDetails.ShipmentDetails.HousenumberExtended == "bis"
+        )
 
         assert (
-            order.CustomerDetails.ShipmentDetails.AddressSupplement ==
-            '3 hoog achter')
-        assert order.CustomerDetails.ShipmentDetails.ZipCode == '1000 AA'
-        assert order.CustomerDetails.ShipmentDetails.City == 'Amsterdam'
-        assert order.CustomerDetails.ShipmentDetails.CountryCode == 'NL'
+            order.CustomerDetails.ShipmentDetails.AddressSupplement
+            == "3 hoog achter"
+        )
+        assert order.CustomerDetails.ShipmentDetails.ZipCode == "1000 AA"
+        assert order.CustomerDetails.ShipmentDetails.City == "Amsterdam"
+        assert order.CustomerDetails.ShipmentDetails.CountryCode == "NL"
         assert (
-            order.CustomerDetails.ShipmentDetails.Email ==
-            'nospam4me@myaccount.com')
+            order.CustomerDetails.ShipmentDetails.Email
+            == "nospam4me@myaccount.com"
+        )
         assert (
-            order.CustomerDetails.ShipmentDetails.DeliveryPhoneNumber ==
-            '12345')
-        assert order.CustomerDetails.ShipmentDetails.Company == 'The Company'
+            order.CustomerDetails.ShipmentDetails.DeliveryPhoneNumber
+            == "12345"
+        )
+        assert order.CustomerDetails.ShipmentDetails.Company == "The Company"
 
         assert len(order.OrderItems) == 1
         item = order.OrderItems[0]
 
-        assert item.OrderItemId == '123'
-        assert item.EAN == '9789062387410'
-        assert item.OfferReference == 'PARTNERREF001'
-        assert item.Title == 'Regelmaat en Inbakeren'
+        assert item.OrderItemId == "123"
+        assert item.EAN == "9789062387410"
+        assert item.OfferReference == "PARTNERREF001"
+        assert item.Title == "Regelmaat en Inbakeren"
         assert item.Quantity == 1
-        assert item.OfferPrice == Decimal('123.45')
-        assert item.PromisedDeliveryDate == 'Binnen 24 uur'
-        assert item.TransactionFee == Decimal('19.12')
+        assert item.OfferPrice == Decimal("123.45")
+        assert item.PromisedDeliveryDate == "Binnen 24 uur"
+        assert item.TransactionFee == Decimal("19.12")
 
 
 def test_order_process():
-    @urlmatch(path=r'/services/rest/shipments/v2$')
+    @urlmatch(path=r"/services/rest/shipments/v2$")
     def create_shipment_stub(url, request):
-        assert request.body == """<?xml version="1.0" encoding="UTF-8"?>
+        assert (
+            request.body
+            == """<?xml version="1.0" encoding="UTF-8"?>
 <ShipmentRequest xmlns="https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
     <DateTime>2016-10-01T01:08:17</DateTime>
     <OrderItemId>123</OrderItemId>
@@ -262,50 +268,56 @@ def test_order_process():
     </Transport>
 </ShipmentRequest>
 """
+        )
         return CREATE_SHIPMENT_RESPONSE
 
     with HTTMock(create_shipment_stub):
-        api = PlazaAPI('api_key', 'api_secret', test=True)
+        api = PlazaAPI("api_key", "api_secret", test=True)
         dt = datetime(2016, 10, 1, 1, 8, 17, 0)
         process_status = api.shipments.create(
-            order_item_id='123',
+            order_item_id="123",
             date_time=dt,
             expected_delivery_date=None,
-            shipment_reference='abc',
+            shipment_reference="abc",
             transporter_code=TransporterCode.GLS,
-            track_and_trace='3S123')
-        assert process_status.sellerId == '12345678'
+            track_and_trace="3S123",
+        )
+        assert process_status.sellerId == "12345678"
 
 
 def test_shipments():
     with HTTMock(shipments_stub):
-        api = PlazaAPI('api_key', 'api_secret', test=True)
+        api = PlazaAPI("api_key", "api_secret", test=True)
         shipments = api.shipments.list(1)
 
         assert len(shipments) == 2
         shipment = shipments[0]
         assert shipment.ShipmentDate == datetime(
-            2016, 9, 19, 18, 21, 59, 324000, tzinfo=tzoffset(None, 7200))
+            2016, 9, 19, 18, 21, 59, 324000, tzinfo=tzoffset(None, 7200)
+        )
         assert shipment.ExpectedDeliveryDate == datetime(
-            2016, 9, 19, 0, 0, tzinfo=tzoffset(None, 7200))
+            2016, 9, 19, 0, 0, tzinfo=tzoffset(None, 7200)
+        )
 
 
 def test_update_transport():
-    @urlmatch(path=r'/services/rest/transports/v2/1$')
+    @urlmatch(path=r"/services/rest/transports/v2/1$")
     def create_transport_stub(url, request):
-        assert request.body == """<?xml version="1.0" encoding="UTF-8"?>
+        assert (
+            request.body
+            == """<?xml version="1.0" encoding="UTF-8"?>
 <ChangeTransportRequest xmlns=\
 "https://plazaapi.bol.com/services/xsd/v2/plazaapi.xsd">
     <TrackAndTrace>3S123</TrackAndTrace>
     <TransporterCode>GLS</TransporterCode>
 </ChangeTransportRequest>
 """
+        )
         return UPDATE_TRANSPORT_RESPONSE
 
     with HTTMock(create_transport_stub):
-        api = PlazaAPI('api_key', 'api_secret', test=True)
+        api = PlazaAPI("api_key", "api_secret", test=True)
         process_status = api.transports.update(
-            1,
-            track_and_trace='3S123',
-            transporter_code=TransporterCode.GLS)
-        assert process_status.sellerId == '925853'
+            1, track_and_trace="3S123", transporter_code=TransporterCode.GLS
+        )
+        assert process_status.sellerId == "925853"

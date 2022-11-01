@@ -8,9 +8,9 @@ import dateutil.parser
 
 def _is_str(v):
     if sys.version_info >= (3, 0, 0):
-        string_types = str,
+        string_types = (str,)
     else:
-        string_types = basestring,
+        string_types = (basestring,)
     return isinstance(v, string_types)
 
 
