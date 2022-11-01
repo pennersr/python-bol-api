@@ -1,4 +1,4 @@
-VERSION = (0, 9, 1, "final", 0)
+VERSION = (0, 10, 0, "final", 0)
 
 __title__ = "python-bol-api"
 __version_info__ = VERSION
@@ -9,4 +9,4 @@ __version__ = ".".join(map(str, VERSION[:3])) + (
 )
 __author__ = "Raymond Penners"
 __license__ = "LGPL 3.0"
-__copyright__ = "Copyright 2017-2020 Raymond Penners and contributors"
+__copyright__ = "Copyright 2017-2022 Raymond Penners and contributors"
